@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>PenGui Login</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/sb-admin.css" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
+          rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div class="container-fluid">
+    <div id="wrapper">
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="login.php">PenGui</a>
+            </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Please Sign In</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form role="form" method="post">
+                            <fieldset>
+                                <div class="form-group">
+                                    <input class="form-control" placeholder="E-mail" name="email" type="email"
+                                           autofocus>
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control" placeholder="Password" name="password" type="password"
+                                           value="">
+                                </div>
+                                <div class="checkbox">
+                                    <label>
+                                        <input name="remember" type="checkbox" value="Remember Me">Remember Me
+                                    </label>
+                                </div>
+                                <!-- Change this to a button or input when using this as a form -->
+                                <button class="btn btn-lg btn-success btn-block" type="submit">Login</button>
+                                <a href="register.php" class="btn btn-lg btn-success btn-block"
+                                   type="submit">Register</a>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- jQuery -->
+        <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
+        <!-- Bootstrap Core JavaScript -->
+        <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
+
+</body>
+</html>
+
+<?php
+include('utility.php');
+$email = $_POST['email'];
+$password = $_POST['password'];
+$utility = new Utility();
+
+//if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    if (empty($email)) {
+        $utility->alert("Email is required");
+        exit();
+    } else {
+        $checkEmail = $utility->validateInput($email);
+        if (!filter_var($checkEmail, FILTER_VALIDATE_EMAIL)) {
+            $utility->alert("Invalid email format" . "<br>");
+            exit();
+        }
+    }
+if (empty($password)) {
+    $utility->alert("Password is required");
+    print_r("STUPID");
+    exit();
+} else {
+    if (!preg_match("/^(.*){8,128}$/", $password)) {
+        $utility->alert("Incorrect Password");
+        print_r("BAD");
+        exit();
+    }
+}
+//}
+
+
+
+//
+//$stmt = $utility->databaseConnection()->prepare("SELECT Salt from personal_details where email LIKE ?");
+//$stmt->bind_param("s", $email);
+//$stmt->execute();
+//$stmt->bind_result($dbSalt);
+//$stmt->fetch();
+//print_r($dbSalt."\n\n");
+//
+//
+//$myPassword = "Mojtaba";
+//$hash = password_hash($myPassword,PASSWORD_BCRYPT, ['cost' => '14','salt' =>$dbSalt]);
+//print_r($hash . "\n\n");
+//
+
+
+
+
+
