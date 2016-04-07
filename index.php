@@ -1,5 +1,14 @@
+<?php
+//require('loginAuthentication.php');
+require('sessionManagement.php');
+if(!isset($_SESSION['loginUser'])) {
+    header("location: login.php");
+}
+
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 
 <head>
     <meta charset="utf-8">
@@ -34,67 +43,63 @@
                 </button>
                 <a class="navbar-brand" href="index.php">PenGui</a>
             </div>
-            <!-- Top User Menu Items -->
-            <ul class="nav navbar-right top-nav">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Test User <b
-                            class="caret"></b></a>
-                    <ul class="dropdown-menu">
+
+        <!-- Top User Menu Items -->
+        <ul class="nav navbar-right top-nav">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
+                        class="fa fa-user"></i> <?php print_r(htmlspecialchars($_SESSION['loginUser'])) ?><b
+                        class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="userSettings.php"><i class="fa fa-fw fa-gear"></i> Settings</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="logout.php"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav side-nav">
+                <li class="active">
+                    <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                </li>
+                <li>
+                    <a href="nmap.php"> Nmap</a>
+                </li>
+                <li>
+                    <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
+                </li>
+                <li>
+                    <a href="forms.html"><i class="fa fa-fw fa-edit"></i> Forms</a>
+                </li>
+                <li>
+                    <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>
+                </li>
+                <li>
+                    <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
+                </li>
+                <li>
+                    <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i
+                            class="fa fa-fw fa-arrows-v"></i> Dropdown <i class="fa fa-fw fa-caret-down"></i></a>
+                    <ul id="demo" class="collapse">
                         <li>
-                            <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
+                            <a href="#">Dropdown Item</a>
                         </li>
                         <li>
-                            <a href="#"><i class="fa fa-fw fa-envelope"></i> Inbox</a>
-                        </li>
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="#"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                            <a href="#">Dropdown Item</a>
                         </li>
                     </ul>
                 </li>
+                <li>
+                    <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> RTL Dashboard</a>
+                </li>
             </ul>
-            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
-            <div class="collapse navbar-collapse navbar-ex1-collapse">
-                <ul class="nav navbar-nav side-nav">
-                    <li class="active">
-                        <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
-                    </li>
-                    <li>
-                        <a href="nmap.php"> Nmap</a>
-                    </li>
-                    <li>
-                        <a href="tables.html"><i class="fa fa-fw fa-table"></i> Tables</a>
-                    </li>
-                    <li>
-                        <a href="forms.html"><i class="fa fa-fw fa-edit"></i> Forms</a>
-                    </li>
-                    <li>
-                        <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>
-                    </li>
-                    <li>
-                        <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
-                    </li>
-                    <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i
-                                class="fa fa-fw fa-arrows-v"></i> Dropdown <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="demo" class="collapse">
-                            <li>
-                                <a href="#">Dropdown Item</a>
-                            </li>
-                            <li>
-                                <a href="#">Dropdown Item</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> RTL Dashboard</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.navbar-collapse -->
         </nav>
         <div id="page-wrapper">
             <div class="container-fluid">
@@ -109,13 +114,12 @@
                 </div>
             </div>
         </div>
-        <!-- /#wrapper -->
     </div>
-    <!-- jQuery -->
-    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
-    <!-- Bootstrap Core JavaScript -->
-    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
+</div>
+<!-- jQuery -->
+<script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 
 </body>
-
 </html>

@@ -91,63 +91,61 @@ $lastName = $_POST["last_Name"];
 $email = $_POST["email"];
 $password = $_POST["password"];
 $confirmPassword = $_POST["confirm_Password"];
-$utility = new Utility();
+
 //print_r($firstName . " " . $lastName . " " . $email . " " . $password . " " . $confirmPassword);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($firstName)) {
-        $utility->alert("Name is required.");
+        Utility::alert("Name is required.");
         exit();
     } else {
-        $checkFirstName = $utility->validateInput($firstName);
+        $checkFirstName = Utility::validateInput($firstName);
         if (!preg_match("/^[a-zA-Z ]*$/", $checkFirstName)) {
-            $utility->alert(("Only letters and spaces allowed for First Name: $checkFirstName"));
+            Utility::alert(("Only letters and spaces allowed for First Name: $checkFirstName"));
             exit();
         }
     }
     if (empty($lastName)) {
-        $utility->alert("Last Name is required");
+        Utility::alert("Last Name is required");
         exit();
     } else {
-        $checkLastName = $utility->validateInput($lastName);
+        $checkLastName = Utility::validateInput($lastName);
         if (!preg_match("/^[a-zA-Z ]*$/", $checkLastName)) {
-            $utility->alert("Only letters and spaces allowed for Last Name: $checkLastName");
+            Utility::alert("Only letters and spaces allowed for Last Name: $checkLastName");
             exit();
         }
     }
     if (empty($email)) {
-        $utility->alert("Email is required");
+        Utility::alert("Email is required");
         exit();
     } else {
-        $checkEmail = $utility->validateInput($email);
+        $checkEmail = Utility::validateInput($email);
         if (!filter_var($checkEmail, FILTER_VALIDATE_EMAIL)) {
-            $utility->alert("Invalid email format" . "<br>");
+            Utility::alert("Invalid email format" . "<br>");
             exit();
         }
     }
     if (empty($password)) {
-        $utility->alert("Password is required");
+        Utility::alert("Password is required");
         exit();
     } else {
         if (!preg_match("/^(.*){8,128}$/", $password)) {
-            $utility->alert("Password doesn't match requirements: Please make sure your password is greater than 8 characters");
+            Utility::alert("Password doesn't match requirements: Please make sure your password is greater than 8 characters");
             exit();
         }
     }
     if ($confirmPassword != $password) {
-        $utility->alert("Password doesn't match");
+        Utility::alert("Password doesn't match");
         exit();
     }
 
-    $utility->checkForExistingEmail($email);
-
+    Utility::checkForExistingEmail($email);
     $salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM); //creating the salt
     $saltArray = array($salt); //adding the salt to the array
-    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $saltArray{0}]);
-
-
-    $stmt = $utility->databaseConnection()->prepare("INSERT INTO personal_details (First_Name, Last_Name, Email, Password, Salt) VALUES (?,?,?,?,?)");
-    $stmt->bind_param("sssss", $firstName, $lastName, $email, $password, $saltArray{0});
+    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $saltArray{0}]); //cost=14 ==> 0.5 second delay
+    
+    $stmt = Utility::databaseConnection()->prepare("INSERT INTO personal_details (First_Name, Last_Name, Email, Password) VALUES (?,?,?,?)");
+    $stmt->bind_param("ssss", $firstName, $lastName, $email, $password);
     $stmt->execute();
     $stmt->close();
 //        $stmt = $utility->databaseConnection()->prepare("SELECT Salt from personal_details where email LIKE ?");
@@ -160,11 +158,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 //    print_r(
 //      '<div class="alert alert-success" role="alert"> <a href="login.php" class="alert-link">You have successfully registered. Go to login screen</a></div> '
 //       );
-    $utility->alert("You have successfully registered. Going to login screen...");
+    Utility::alert("You have successfully registered. Going to login screen...");
     print_r('<script> window.location.replace("login.php")</script>');
 }//end of POST METHOD REQUEST
-
-
-
-
-

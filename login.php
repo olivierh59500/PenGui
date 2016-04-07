@@ -69,62 +69,66 @@
                 </div>
             </div>
         </div>
-        <!-- jQuery -->
-        <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
-        <!-- Bootstrap Core JavaScript -->
-        <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
-
+    </div>
+    <!-- jQuery -->
+    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
 </html>
-
 <?php
-include('utility.php');
-$email = $_POST['email'];
-$password = $_POST['password'];
-$utility = new Utility();
+include('loginAuthentication.php');
 
+
+//include('utility.php');
+//$email = $_POST['email'];
+//$password = $_POST['password'];
+//
+//$utility = new Utility();
+//
 //if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    if (empty($email)) {
-        $utility->alert("Email is required");
-        exit();
-    } else {
-        $checkEmail = $utility->validateInput($email);
-        if (!filter_var($checkEmail, FILTER_VALIDATE_EMAIL)) {
-            $utility->alert("Invalid email format" . "<br>");
-            exit();
-        }
-    }
-if (empty($password)) {
-    $utility->alert("Password is required");
-    print_r("STUPID");
-    exit();
-} else {
-    if (!preg_match("/^(.*){8,128}$/", $password)) {
-        $utility->alert("Incorrect Password");
-        print_r("BAD");
-        exit();
-    }
-}
-//}
-
-
-
 //
-//$stmt = $utility->databaseConnection()->prepare("SELECT Salt from personal_details where email LIKE ?");
-//$stmt->bind_param("s", $email);
-//$stmt->execute();
-//$stmt->bind_result($dbSalt);
-//$stmt->fetch();
-//print_r($dbSalt."\n\n");
+//    if (empty($email)) {
+//        $utility->alert("Email is required");
+//        exit();
+//    } else {
+//        $checkEmail = $utility->validateInput($email);
+//        if (!filter_var($checkEmail, FILTER_VALIDATE_EMAIL)) {
+//            $utility->alert("Invalid email format" . "<br>");
+//            exit();
+//        }
+//    }
+//    if (empty($password)) {
+//        $utility->alert("Password is required");
+//        exit();
+//    } else {
+//        if (!preg_match("/^(.*){8,128}$/", $password)) {
+//            $utility->alert("Incorrect Password");
+//            exit();
+//        }
+//    }
+//
+//    $stmt = $utility->databaseConnection()->prepare("SELECT Email, Password, Salt FROM personal_details WHERE Email = ?");
+//    $stmt->bind_param("s", $email);
+//    $stmt->execute();
+//    $stmt->bind_result($dbEmail, $dbPassword, $dbSalt);
+//    $stmt->fetch();
+//    if ($dbEmail == $email) {
+//        $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $dbSalt]); //cost=14 ==> 0.5 second delay
+//        if (hash_equals($dbPassword, $password)) { //Timing attack safe string comparison hash_equals(Known_Hash, User_Supplied)
+//            $_SESSION["username"] = $email;
+//            header("location: index.php");
+//        } else {
+//            $utility->alert("Email or Password is incorrect. Please try again.");
+//            exit();
+//        }
+//    } else {
+//        $utility->alert("Email or Password is incorrect. Please try again.");
+//        exit();
+//    }
+//    $stmt->close();
+//    $utility->databaseConnection()->close();
 //
 //
-//$myPassword = "Mojtaba";
-//$hash = password_hash($myPassword,PASSWORD_BCRYPT, ['cost' => '14','salt' =>$dbSalt]);
-//print_r($hash . "\n\n");
-//
-
-
-
-
-
+//}//end of post method
+//http://www.formget.com/login-form-in-php/
