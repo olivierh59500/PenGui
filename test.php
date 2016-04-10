@@ -5,32 +5,23 @@
  * Date: 01/04/16
  * Time: 03:43
  */
+error_reporting(-1); ini_set('display_errors', 1);
 
-
-$mysqli = new mysqli("127.0.0.1", "user", "password", "world");
-
-if($mysqli->connect_error)
-{
-    die("$mysqli->connect_errno: $mysqli->connect_error");
-}
-
-$query = "SELECT Name, Population, Continent FROM Country WHERE Continent=? ORDER BY Name LIMIT 1";
-
-
-$stmt->prepare($query))
-$stmt->bind_param("s", $continent);
-$continent_array = array('Europe', 'Africa', 'Asia', 'North America');
+include('utility.php');
+$currentUser = "mojtaba_amiri@hotmail.co.uk";
+$taskCompleted = "completed";
+$stmt = Utility::databaseConnection()->prepare("Select user_input_command, nmap_log_returned, task_status From nmap WHERE username = ? and task_status = ? order by create_time DESC;");
+$stmt->bind_param("ss", $currentUser, $taskCompleted);
 $stmt->execute();
-$result = $stmt->get_result();
-while ($row = $result->fetch_array(MYSQLI_NUM)) {
-    foreach ($row as $r) {
-        print "$r ";
-    }
-    print "\n";
+$stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
+//$stmt->fetch();
+//print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
 
+while ($stmt->fetch()) {
+    print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
 
+}
 $stmt->close();
-$mysqli->close();
 
 
 
@@ -65,25 +56,26 @@ $mysqli->close();
 
 
 
-
-
-                        include ('utility.php');
-                        $currentUser = $_SESSION['loginUser'];
-        print_r($currentUser);
-                        $taskCompleted = "completed";
-                        $stmt = Utility::databaseConnection()->prepare("Select user_input_command, nmap_log_returned, task_status From nmap WHERE username = ? 
-                                                                        and task_status = ? order by create_time DESC;");
-                        $stmt->bind_param("ss", $currentUser, $taskCompleted);
-                        $stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
-                        $stmt->execute();
-                        $stmt->fetch();
-                        print_r($dbNmapLogReturned);
-//                        while ($stmt->fetch()) {
-//                            print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
-//                        }
-                        $stmt->close();
-                        
-
+//
+//
+//
+//                        include ('utility.php');
+//                        $currentUser = $_SESSION['loginUser'];
+//        print_r($currentUser);
+//                        $taskCompleted = "completed";
+//                        $stmt = Utility::databaseConnection()->prepare("Select user_input_command, nmap_log_returned, task_status From nmap WHERE username = ? 
+//                                                                        and task_status = ? order by create_time DESC;");
+//                        $stmt->bind_param("ss", $currentUser, $taskCompleted);
+//                        $stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
+//                        $stmt->execute();
+//                        $stmt->fetch();
+//                        print_r($dbNmapLogReturned);
+////                        while ($stmt->fetch()) {
+////                            print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
+////                        }
+//                        $stmt->close();
+//                        
+//
 
 
 

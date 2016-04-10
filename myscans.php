@@ -1,6 +1,8 @@
 <?php
-//require('loginAuthentication.php');
+error_reporting(-1); ini_set('display_errors', 1);
 require('sessionManagement.php');
+require('utility.php');
+
 if (!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
@@ -8,12 +10,12 @@ if (!isset($_SESSION['loginUser'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
-
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="120">
     <meta name="description" content="">
     <meta name="author" content="Mojtaba Amiri">
 
@@ -48,7 +50,7 @@ if (!isset($_SESSION['loginUser'])) {
             <ul class="nav navbar-right top-nav">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-                            class="fa fa-user"></i> <?php print_r(htmlspecialchars($_SESSION['loginUser'])) ?><b
+                            class="fa fa-user"></i> <?php echo (htmlspecialchars($_SESSION['loginUser'], ENT_QUOTES)) ?><b
                             class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
@@ -101,7 +103,7 @@ if (!isset($_SESSION['loginUser'])) {
             </div>
             <!-- /.navbar-collapse -->
         </nav>
-        <div class="container pull-left">
+        <div class="container container-fluid pull-left">
             <h2>Tasks Pending</h2>
             <table class="table table-hover table-responsive">
                 <thead>
@@ -109,28 +111,23 @@ if (!isset($_SESSION['loginUser'])) {
                 <td>Task Status</td>
                 </thead>
                 <tbody>
-                <tr>
-                    <?php
-                    //pending tasks
-                    error_reporting(-1); ini_set('display_errors', 1);
-                    require('utility.php');
-                    $currentUser = $_SESSION['loginUser'];
-                    $taskStatus = "pending";
-                    $stmt = Utility::databaseConnection()->prepare("Select user_input_command, task_status From nmap WHERE task_status = ? and username = ? order by create_time DESC;");
-                    $stmt->bind_param("ss", $taskStatus, $currentUser);
-                    $stmt->bind_result($dbNmapCommand, $dbTaskStatus);
-                    $stmt->execute();
-                    while ($stmt->fetch()) {
-                        print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
-                    }
-                    $stmt->close();
-                    ?>
-                </tr>
+                <?php
+                $currentUser = mysqli_real_escape_string(Utility::databaseConnection(), $_SESSION['loginUser']);
+                $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, task_status FROM nmap WHERE task_status = 'pending' AND username = ? ORDER BY create_time DESC");
+                $stmt->bind_param("s", $currentUser);
+                $stmt->bind_result($dbNmapCommand, $dbTaskStatus);
+                $stmt->execute();
+                $stmt->store_result();
+                while ($stmt->fetch()) {
+                    echo "<tr> <td>" .  htmlentities($dbNmapCommand, ENT_QUOTES) . "</td> <td>" .
+                                        htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                }
+                $stmt->close(); ?>
                 </tbody>
             </table>
-
-            <div class="container pull-left">
-                <h2>Tasks Pending</h2>
+        </div>
+            <div class="container container-fluid pull-left">
+                <h2>Tasks completed</h2>
                 <table class="table table-hover table-responsive">
                     <thead>
                     <td>Nmap Scan</td>
@@ -138,42 +135,27 @@ if (!isset($_SESSION['loginUser'])) {
                     <td>Task Status</td>
                     </thead>
                     <tbody>
-                    <tr>
-                        <?php
-                        $currentUser = $_SESSION['loginUser'];
-                        $taskCompleted = "completed";
-                        $stmt = Utility::databaseConnection()->prepare("Select user_input_command, nmap_log_returned, task_status From nmap WHERE username = ? 
-                                                                        and task_status = ? order by create_time DESC;");
-                        $stmt->bind_param("ss", $currentUser, $taskCompleted);
+                        <?php //Task Completed
+                        $currentUser = mysqli_real_escape_string(Utility::databaseConnection(), $_SESSION['loginUser']);
+                        $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, nmap_log_returned, task_status FROM nmap WHERE username = ? AND task_status = 'completed' ORDER BY create_time DESC");
+                        $stmt->bind_param("s", $currentUser);
                         $stmt->execute();
                         $stmt->store_result();
-                        $numOfRows = $stmt->num_rows;
-                        $result = $stmt->get_result();
-                        while($row = $result->fetch_assoc()){
-                            foreach ($row as $r){
-                                print "$r \n";
-                            }
+                        $stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
+
+                        while ($stmt->fetch()) {
+                            echo "<tr> <td>" .  htmlentities($dbNmapCommand, ENT_QUOTES) . "</td> <td>" .
+                                                htmlentities($dbNmapLogReturned, ENT_QUOTES) . "</td> <td>" .
+                                                htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
                         }
-
-
-
-                        //$stmt->fetch();
-//                        print_r($dbNmapLogReturned);
-//                        while ($stmt->fetch()) {
-//                            print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
-//                        }
-//                        $stmt->close();
-                        ?>
-                    </tr>
+                        $stmt->close(); ?>
                     </tbody>
                 </table>
             </div>
-        </div>
     </div>
     <!-- jQuery -->
     <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
     <!-- Bootstrap Core JavaScript -->
     <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
-
 </body>
 </html>

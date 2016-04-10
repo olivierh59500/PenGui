@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: root
- * Date: 03/04/16
- * Time: 12:45
- */
-
 require('utility.php');
 require('sessionManagement.php');
 
@@ -15,11 +8,11 @@ $passwordAuthentication = $_POST['password'];
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($emailAuthentication)) {
-        Utility::alert("Email is required");
+        Utility::alert(htmlentities("Email is required", ENT_QUOTES));
         exit();
     }
     if (empty($passwordAuthentication)) {
-        Utility::alert("Password is required");
+        Utility::alert(htmlentities("Password is required", ENT_QUOTES));
         exit();
     }
 
@@ -30,62 +23,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->fetch();
     if ($dbEmail == $emailAuthentication) {
         if (password_verify($passwordAuthentication, $dbPassword)) { //Timing attack safe string comparison hash_equals(Known_Hash, User_Supplied)
-//            $_SESSION['loginUser'] = $emailAuthentication;
-//            header("location: index.php");
             Session::manageSession($emailAuthentication);
             header("location: index.php");
         } else {
-            Utility::alert("Email or Password is incorrect. Please try again.");
+            Utility::alert(htmlentities("Email or Password is incorrect. Please try again.,", ENT_QUOTES));
             exit();
         }
     } else {
-        Utility::alert("Email or Password is incorrect. Please try again.");
+        Utility::alert(htmlentities("Email or Password is incorrect. Please try again.", ENT_QUOTES));
         exit();
     }
     $stmt->close();
 }//end of post method
 
-//
-//
 //NewAboutYoursAPIHelp
 //904 bytes, HTML + PHP     Soft wrap Raw text Duplicate
-// 1
-// 2
-// 3
-// 4
-// 5
-// 6
-// 7
-// 8
-// 9
-//10
-//11
-//12
-//13
-//14
-//15
-//16
-//17
-//18
-//19
-//20
-//21
-//22
-//23
-//24
-//25
-//26
-//27
-//28
-//29
-//30
-//31
-//32
-//33
-//34
-//35
-//36
-//37
+
 //<?php
 //# Start with an array that is empty. No problems inside means no errors has occurred.  Does that make sense?
 //$problems = [];

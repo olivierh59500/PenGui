@@ -82,9 +82,8 @@
         <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
 </html>
-
 <?php
-include('utility.php');
+require('utility.php');
 
 $firstName = $_POST["first_Name"];
 $lastName = $_POST["last_Name"];
@@ -92,7 +91,6 @@ $email = $_POST["email"];
 $password = $_POST["password"];
 $confirmPassword = $_POST["confirm_Password"];
 
-//print_r($firstName . " " . $lastName . " " . $email . " " . $password . " " . $confirmPassword);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($firstName)) {
@@ -143,21 +141,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM); //creating the salt
     $saltArray = array($salt); //adding the salt to the array
     $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $saltArray{0}]); //cost=14 ==> 0.5 second delay
-    
+
     $stmt = Utility::databaseConnection()->prepare("INSERT INTO personal_details (First_Name, Last_Name, Email, Password) VALUES (?,?,?,?)");
     $stmt->bind_param("ssss", $firstName, $lastName, $email, $password);
     $stmt->execute();
     $stmt->close();
-//        $stmt = $utility->databaseConnection()->prepare("SELECT Salt from personal_details where email LIKE ?");
-//        $stmt->bind_param("s", $email);
-//        $stmt->execute();
-//        $stmt->bind_result($dbSalt);
-//        $stmt->fetch();
-//        print_r($dbSalt . "\n\n");
-//        $hash = password_hash($myPassword, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $dbSalt]);
-//    print_r(
-//      '<div class="alert alert-success" role="alert"> <a href="login.php" class="alert-link">You have successfully registered. Go to login screen</a></div> '
-//       );
-    Utility::alert("You have successfully registered. Going to login screen...");
+
+    Utility::alert(htmlentities("You have successfully registered. Going to login screen..."));
     print_r('<script> window.location.replace("login.php")</script>');
 }//end of POST METHOD REQUEST
+?>

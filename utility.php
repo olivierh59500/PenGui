@@ -24,44 +24,20 @@ class Utility
 
     public static function databaseConnection()
     {
-
         $host="localhost";
         $port=3306;
         $socket="";
         $user="root";
         $password="j2FreVA+";
         $dbname="PenGui";
-
         $connection = new mysqli($host, $user, $password, $dbname, $port, $socket)
         or die ('Could not connect to the database server' . mysqli_connect_error());
         return $connection;
-
     }
-
-//    function readFromDatabase()
-//    {
-//        $sql = "Select user_input_command, task_status From nmap";
-//        $result = databaseConnection()->query($sql);
-//
-//        if ($result->num_rows > 0) {
-//            while ($row = $result->fetch_assoc()) {
-//                $nmapCommand = $row["user_input_command"];
-//                //$nmapTaskStatus = $row["task_status"];
-//                //Array($dbResult);
-//                printf($nmapCommand . "\n");
-//                $nmapTextFile = ">> nmap.txt";
-//                $test = exec($nmapCommand . $nmapTextFile, $commandReturned);
-//                printf($commandReturned);
-//            }
-//        } else {
-//            echo "0 result";
-//        }
-//        databaseConnection()->close();
-//    }
 
     public static function alert($message)
     {
-        print_r('<script type="text/javascript">alert("' . $message . '")</script>');
+        echo '<script type="text/javascript">alert("' . htmlentities($message, ENT_QUOTES) . '")</script>';
     }
 
     public static function authenticateEmail($email)
