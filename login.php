@@ -11,11 +11,11 @@
     <title>PenGui Login</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/sb-admin.css" rel="stylesheet">
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/sb-admin.css" rel="stylesheet">
     <!-- Custom Fonts -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
           rel="stylesheet" type="text/css">
 </head>
 
@@ -71,9 +71,9 @@
         </div>
     </div>
     <!-- jQuery -->
-    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
+    <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
     <!-- Bootstrap Core JavaScript -->
-    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
+    <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
 </html>
 <?php

@@ -1,16 +1,18 @@
 <?php
-error_reporting(-1); ini_set('display_errors', 1);
+error_reporting(-1);
+ini_set('display_errors', 1);
 require('sessionManagement.php');
 require('utility.php');
+
 
 if (!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
-
+exec("php backgroundTask.php >/dev/null 2>/dev/null &");
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -22,11 +24,11 @@ if (!isset($_SESSION['loginUser'])) {
     <title>PenGui Admin</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/sb-admin.css" rel="stylesheet">
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/sb-admin.css" rel="stylesheet">
     <!-- Custom Fonts -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
           rel="stylesheet" type="text/css">
 </head>
 
@@ -50,7 +52,8 @@ if (!isset($_SESSION['loginUser'])) {
             <ul class="nav navbar-right top-nav">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-                            class="fa fa-user"></i> <?php echo (htmlspecialchars($_SESSION['loginUser'], ENT_QUOTES)) ?><b
+                            class="fa fa-user"></i> <?php echo(htmlspecialchars($_SESSION['loginUser'], ENT_QUOTES)) ?>
+                        <b
                             class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
@@ -103,59 +106,84 @@ if (!isset($_SESSION['loginUser'])) {
             </div>
             <!-- /.navbar-collapse -->
         </nav>
-        <div class="container container-fluid pull-left">
-            <h2>Tasks Pending</h2>
-            <table class="table table-hover table-responsive">
-                <thead>
-                <td>Nmap Scan</td>
-                <td>Task Status</td>
-                </thead>
-                <tbody>
-                <?php
-                $currentUser = mysqli_real_escape_string(Utility::databaseConnection(), $_SESSION['loginUser']);
-                $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, task_status FROM nmap WHERE task_status = 'pending' AND username = ? ORDER BY create_time DESC");
-                $stmt->bind_param("s", $currentUser);
-                $stmt->bind_result($dbNmapCommand, $dbTaskStatus);
-                $stmt->execute();
-                $stmt->store_result();
-                while ($stmt->fetch()) {
-                    echo "<tr> <td>" .  htmlentities($dbNmapCommand, ENT_QUOTES) . "</td> <td>" .
-                                        htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
-                }
-                $stmt->close(); ?>
-                </tbody>
-            </table>
-        </div>
-            <div class="container container-fluid pull-left">
-                <h2>Tasks completed</h2>
-                <table class="table table-hover table-responsive">
-                    <thead>
-                    <td>Nmap Scan</td>
-                    <td>Result</td>
-                    <td>Task Status</td>
-                    </thead>
-                    <tbody>
-                        <?php //Task Completed
-                        $currentUser = mysqli_real_escape_string(Utility::databaseConnection(), $_SESSION['loginUser']);
-                        $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, nmap_log_returned, task_status FROM nmap WHERE username = ? AND task_status = 'completed' ORDER BY create_time DESC");
-                        $stmt->bind_param("s", $currentUser);
-                        $stmt->execute();
-                        $stmt->store_result();
-                        $stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
-
-                        while ($stmt->fetch()) {
-                            echo "<tr> <td>" .  htmlentities($dbNmapCommand, ENT_QUOTES) . "</td> <td>" .
-                                                htmlentities($dbNmapLogReturned, ENT_QUOTES) . "</td> <td>" .
-                                                htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
-                        }
-                        $stmt->close(); ?>
-                    </tbody>
-                </table>
+        <div id="page-wrapper">
+            <div class="container-fluid">
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            Nmap
+                            <small>Network Scanning</small>
+                        </h1>
+                        <!-- Page Content -->
+                        <div id="page-content-wrapper">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <h2>Tasks Pending</h2>
+                                        <table class="table table-hover table-responsive">
+                                            <thead>
+                                            <td>Nmap Scan</td>
+                                            <td>Task Status</td>
+                                            </thead>
+                                            <tbody>
+                                            <?php
+                                            $currentUser = $_SESSION['loginUser'];
+                                            $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, task_status FROM nmap WHERE task_status = 'pending' AND username = ? ORDER                                                                                             BY create_time DESC");
+                                            $stmt->bind_param("s", $currentUser);
+                                            $stmt->bind_result($dbNmapCommand, $dbTaskStatus);
+                                            $stmt->execute();
+                                            $stmt->store_result();
+                                            while ($stmt->fetch()) {
+                                                echo "<tr>  <td>" . htmlentities($dbNmapCommand, ENT_QUOTES) . "</td>" .
+                                                            "<td>" .  htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                                            }
+                                            $stmt->close(); ?>
+                                            </tbody>
+                                        </table>
+                                        <!--Table Continue-->
+                                        <h2>Tasks completed</h2>
+                                        <table class="table table-hover table-responsive">
+                                            <thead>
+                                            <td>Nmap Scan</td>
+                                            <td>Result</td>
+                                            <td>Task Status</td>
+                                            </thead>
+                                            <tbody>
+                                            <?php //Task Completed
+                                            $currentUser = $_SESSION['loginUser'];
+                                            $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, nmap_log_returned, task_status FROM nmap WHERE username = ? AND task_status                                                                                            ='completed' ORDER BY create_time DESC");
+                                            $stmt->bind_param("s", $currentUser);
+                                            $stmt->execute();
+                                            $stmt->store_result();
+                                            $stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
+                                            while ($stmt->fetch()) {
+                                                echo "<tr>  <td>" . htmlentities($dbNmapCommand, ENT_QUOTES) . "</td>
+                                                            <td>" . htmlentities($dbNmapLogReturned, ENT_QUOTES) . "</td> 
+                                                            <td>" . htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                                            }
+                                            $stmt->close(); ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /#page-content-wrapper -->
+                    </div>
+                </div>
             </div>
+        </div>
     </div>
-    <!-- jQuery -->
-    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
-    <!-- Bootstrap Core JavaScript -->
-    <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
+</div>
+<!-- jQuery -->
+<script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+
+
+
+

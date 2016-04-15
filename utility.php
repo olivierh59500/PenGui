@@ -14,7 +14,7 @@ class Utility
             $stmt->execute();
             $stmt->bind_result($checkEmail);
             while ($stmt->fetch()) {
-                $emailExists = "Email already exists please enter another email";
+                htmlentities($emailExists = "Email already exists please enter another email", ENT_QUOTES);
                 Utility::alert($emailExists);
                 exit();
             }
@@ -27,7 +27,7 @@ class Utility
         $host="localhost";
         $port=3306;
         $socket="";
-        $user="root";
+        $user="pengui";
         $password="j2FreVA+";
         $dbname="PenGui";
         $connection = new mysqli($host, $user, $password, $dbname, $port, $socket)
@@ -40,22 +40,22 @@ class Utility
         echo '<script type="text/javascript">alert("' . htmlentities($message, ENT_QUOTES) . '")</script>';
     }
 
-    public static function authenticateEmail($email)
-    {
-        if ($stmt = Utility::databaseConnection()->prepare("SELECT Email FROM personal_details WHERE email = ?")) {
-            $stmt->bind_param("s", $email);
-            if ($stmt->execute()) {
-                $stmt->bind_result($authenticateEmail);
-                $stmt->fetch();
-                if ($stmt->num_rows > 0) {
-                    Utility::alert("Email or Password doesn't match.");
-                } else {
-                    Utility::alert("Email found");
-                }
-                $stmt->close();
-            }
-        }
-    }//Email not found function
+//    public static function authenticateEmail($email)
+//    {
+//        if ($stmt = Utility::databaseConnection()->prepare("SELECT Email FROM personal_details WHERE email = ?")) {
+//            $stmt->bind_param("s", $email);
+//            if ($stmt->execute()) {
+//                $stmt->bind_result($authenticateEmail);
+//                $stmt->fetch();
+//                if ($stmt->num_rows > 0) {
+//                    Utility::alert("Email or Password doesn't match.");
+//                } else {
+//                    Utility::alert("Email found");
+//                }
+//                $stmt->close();
+//            }
+//        }
+//    }//Email not found function
 
     public static function validateInput($userInputString)
     {

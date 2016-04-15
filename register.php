@@ -11,11 +11,11 @@
     <title>PenGui Register</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/css/sb-admin.css" rel="stylesheet">
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/sb-admin.css" rel="stylesheet">
     <!-- Custom Fonts -->
-    <link href="http://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
+    <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
           rel="stylesheet" type="text/css">
 </head>
 
@@ -77,9 +77,9 @@
             </div>
         </div>
         <!-- jQuery -->
-        <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
+        <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
         <!-- Bootstrap Core JavaScript -->
-        <script src="http://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
+        <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
 </html>
 <?php
@@ -95,6 +95,7 @@ $confirmPassword = $_POST["confirm_Password"];
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($firstName)) {
         Utility::alert("Name is required.");
+        //$errorName = "Name is required.";
         exit();
     } else {
         $checkFirstName = Utility::validateInput($firstName);
@@ -127,8 +128,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         Utility::alert("Password is required");
         exit();
     } else {
-        if (!preg_match("/^(.*){8,128}$/", $password)) {
-            Utility::alert("Password doesn't match requirements: Please make sure your password is greater than 8 characters");
+        //fix the regex
+        if (!preg_match("/^(.*){8,128}$/", $password)) {//!preg_match("/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-£%/(/)_=+]).{8,}$/", $password)) {
+            Utility::alert("Password doesn't match requirements: please make sure your password is greater than 8 characters and contains atleast: 1 UPPER CASE 1 lower 1 digit 1 Special Character");
             exit();
         }
     }
