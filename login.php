@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <?php
 //error_reporting(-1);
 //ini_set('display_errors', 1);
@@ -24,8 +23,6 @@ if (isset($_POST['g-recaptcha-response']))
 //        }
     }
     ?>
-=======
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
 <!DOCTYPE html>
 <html lang="en">
 
@@ -88,22 +85,16 @@ if (isset($_POST['g-recaptcha-response']))
                                     </label>
                                 </div>
                                 <!-- Change this to a button or input when using this as a form -->
-<<<<<<< HEAD
                                 <div class="g-recaptcha" data-sitekey="<?php echo $siteKey; ?>"></div>
                                 <script type="text/javascript"
                                         src="https://www.google.com/recaptcha/api.js?hl=<?php echo $lang; ?>">
                                 </script>
-=======
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                                 <button class="btn btn-lg btn-success btn-block" type="submit">Login</button>
                                 <a href="register.php" class="btn btn-lg btn-success btn-block"
                                    type="submit">Register</a>
                             </fieldset>
                         </form>
-<<<<<<< HEAD
                         <div class="g-recaptcha" data-sitekey="6Le-0h0TAAAAAMBEJikzNagQH4kLHF9xMuzaIAfL"></div>
-=======
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                     </div>
                 </div>
             </div>
@@ -114,10 +105,7 @@ if (isset($_POST['g-recaptcha-response']))
     <!-- Bootstrap Core JavaScript -->
     <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
-<<<<<<< HEAD
 <script src='https://www.google.com/recaptcha/api.js'></script>
-=======
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
 </html>
 <?php
 require('utility.php');
@@ -145,10 +133,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($dbEmail == $emailAuthentication) {
         if (password_verify($passwordAuthentication, $dbPassword)) { //Timing attack safe string comparison hash_equals(Known_Hash, User_Supplied)
             Session::manageSession($emailAuthentication);
-<<<<<<< HEAD
-=======
-            header("location: index.php");
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
         } else {
             Utility::alert(htmlentities("Email or Password is incorrect. Please try again.,", ENT_QUOTES));
             exit();
@@ -159,63 +143,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $stmt->close();
 }//end of post method
-<<<<<<< HEAD
 ?>
-=======
-?>
-<!--//include('loginAuthentication.php');-->
-<!---->
-<!---->
-<!--//include('utility.php');-->
-<!--//$email = $_POST['email'];-->
-<!--//$password = $_POST['password'];-->
-<!--//-->
-<!--//$utility = new Utility();-->
-<!--//-->
-<!--//if ($_SERVER["REQUEST_METHOD"] == "POST") {-->
-<!--//-->
-<!--//    if (empty($email)) {-->
-<!--//        $utility->alert("Email is required");-->
-<!--//        exit();-->
-<!--//    } else {-->
-<!--//        $checkEmail = $utility->validateInput($email);-->
-<!--//        if (!filter_var($checkEmail, FILTER_VALIDATE_EMAIL)) {-->
-<!--//            $utility->alert("Invalid email format" . "<br>");-->
-<!--//            exit();-->
-<!--//        }-->
-<!--//    }-->
-<!--//    if (empty($password)) {-->
-<!--//        $utility->alert("Password is required");-->
-<!--//        exit();-->
-<!--//    } else {-->
-<!--//        if (!preg_match("/^(.*){8,128}$/", $password)) {-->
-<!--//            $utility->alert("Incorrect Password");-->
-<!--//            exit();-->
-<!--//        }-->
-<!--//    }-->
-<!--//-->
-<!--//    $stmt = $utility->databaseConnection()->prepare("SELECT Email, Password, Salt FROM personal_details WHERE Email = ?");-->
-<!--//    $stmt->bind_param("s", $email);-->
-<!--//    $stmt->execute();-->
-<!--//    $stmt->bind_result($dbEmail, $dbPassword, $dbSalt);-->
-<!--//    $stmt->fetch();-->
-<!--//    if ($dbEmail == $email) {-->
-<!--//        $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $dbSalt]); //cost=14 ==> 0.5 second delay-->
-<!--//        if (hash_equals($dbPassword, $password)) { //Timing attack safe string comparison hash_equals(Known_Hash, User_Supplied)-->
-<!--//            $_SESSION["username"] = $email;-->
-<!--//            header("location: index.php");-->
-<!--//        } else {-->
-<!--//            $utility->alert("Email or Password is incorrect. Please try again.");-->
-<!--//            exit();-->
-<!--//        }-->
-<!--//    } else {-->
-<!--//        $utility->alert("Email or Password is incorrect. Please try again.");-->
-<!--//        exit();-->
-<!--//    }-->
-<!--//    $stmt->close();-->
-<!--//    $utility->databaseConnection()->close();-->
-<!--//-->
-<!--//-->
-<!--//}//end of post method-->
-<!--//http://www.formget.com/login-form-in-php/-->
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4

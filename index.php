@@ -74,17 +74,10 @@ if(!isset($_SESSION['loginUser'])) {
                     <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
                 </li>
                 <li>
-<<<<<<< HEAD
                     <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
                 </li>
                 <li>
                     <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
-=======
-                    <a href="forms.html"><i class="fa fa-fw fa-edit"></i> Forms</a>
-                </li>
-                <li>
-                    <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                 </li>
                 <li>
                     <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
