@@ -65,10 +65,17 @@ if(!isset($_SESSION['loginUser'])) {
                         <a href="nmap.php"> Nmap</a>
                     </li>
                     <li>
+<<<<<<< HEAD
                         <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
                     </li>
                     <li>
                         <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
+=======
+                        <a href="tables.html"><i class="fa fa-fw fa-table"></i> Tables</a>
+                    </li>
+                    <li>
+                        <a href="forms.html"><i class="fa fa-fw fa-edit"></i> Forms</a>
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                     </li>
                     <li>
                         <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>

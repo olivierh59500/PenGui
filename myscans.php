@@ -21,7 +21,11 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
     <meta name="description" content="">
     <meta name="author" content="Mojtaba Amiri">
 
+<<<<<<< HEAD
     <title>PenGui My Scans</title>
+=======
+    <title>PenGui Admin</title>
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
 
     <!-- Bootstrap Core CSS -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
@@ -79,10 +83,17 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                         <a href="myscans.php"><i class="fa fa-fw fa-table"></i> MyScans</a>
                     </li>
                     <li>
+<<<<<<< HEAD
                         <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
                     </li>
                     <li>
                         <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
+=======
+                        <a href="forms.html"><i class="fa fa-fw fa-edit"></i> Forms</a>
+                    </li>
+                    <li>
+                        <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                     </li>
                     <li>
                         <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
@@ -112,8 +123,13 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
+<<<<<<< HEAD
                             My Scans
                             <small>List of your Scans</small>
+=======
+                            Nmap
+                            <small>Network Scanning</small>
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                         </h1>
                         <!-- Page Content -->
                         <div id="page-content-wrapper">
@@ -129,6 +145,7 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                                             <tbody>
                                             <?php
                                             $currentUser = $_SESSION['loginUser'];
+<<<<<<< HEAD
                                             $stmt = Utility::databaseConnection()->prepare("
                                                     SELECT * FROM (SELECT user_input_command, task_status FROM nmap WHERE task_status = 'processing' AND username = ? ORDER BY create_time)
                                                     nmap
@@ -137,6 +154,10 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                                                     whois");
 
                                             $stmt->bind_param("ss", $currentUser, $currentUser);
+=======
+                                            $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, task_status FROM nmap WHERE task_status = 'pending' AND username = ? ORDER                                                                                             BY create_time DESC");
+                                            $stmt->bind_param("s", $currentUser);
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                                             $stmt->bind_result($dbNmapCommand, $dbTaskStatus);
                                             $stmt->execute();
                                             $stmt->store_result();
@@ -158,6 +179,7 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                                             <tbody>
                                             <?php //Task Completed
                                             $currentUser = $_SESSION['loginUser'];
+<<<<<<< HEAD
                                             $stmt = Utility::databaseConnection()->prepare("select user_input_command, nmap_log_returned, task_status, create_time from nmap where username=? and task_status='completed'
 union
 select user_input_command, whois_log_returned, task_status, create_time from whois where username=? and task_status='completed'
@@ -169,6 +191,16 @@ order by create_time desc");
                                             while ($stmt->fetch()) {
                                                 echo "<tr>  <td>" . htmlentities($dbNmapCommand, ENT_QUOTES) . "</td>
                                                             <td>" . nl2br(htmlentities(trim($dbNmapLogReturned), ENT_QUOTES)) . "</td> 
+=======
+                                            $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, nmap_log_returned, task_status FROM nmap WHERE username = ? AND task_status                                                                                            ='completed' ORDER BY create_time DESC");
+                                            $stmt->bind_param("s", $currentUser);
+                                            $stmt->execute();
+                                            $stmt->store_result();
+                                            $stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
+                                            while ($stmt->fetch()) {
+                                                echo "<tr>  <td>" . htmlentities($dbNmapCommand, ENT_QUOTES) . "</td>
+                                                            <td>" . htmlentities($dbNmapLogReturned, ENT_QUOTES) . "</td> 
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                                                             <td>" . htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
                                             }
                                             $stmt->close(); ?>
@@ -190,4 +222,13 @@ order by create_time desc");
 <!-- Bootstrap Core JavaScript -->
 <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+
+
+
+
+
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4

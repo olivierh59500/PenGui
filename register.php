@@ -152,5 +152,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     Utility::alert(htmlentities("You have successfully registered. Going to login screen..."));
     print_r('<script> window.location.replace("login.php")</script>');
 }//end of POST METHOD REQUEST
+<<<<<<< HEAD
 ?>
 
+=======
+?>
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4

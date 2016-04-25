@@ -6,134 +6,24 @@
  * Time: 03:43
  */
 error_reporting(-1); ini_set('display_errors', 1);
-//
-////$ip = $_POST['ip or whatever'];
-//$ip =  "192.168.0.9/24";
-//
-////$cidr = 32;
-//if( strpos( $ip, '/' ) !== false ) {
-//    list( $ip, $cidr ) = explode( '/', $ip, 2 );
-//}
-//$ip = filter_var( $ip, FILTER_VALIDATE_IP );
-//$cidr = filter_var( $cidr, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 32]] );
-//
-//if (filter_var( $ip, FILTER_VALIDATE_IP ) && filter_var( $cidr, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 32]] )) {
-//    print $ip ."/". $cidr;
-//} else {
-//    print "dont match";
-//}
 
+include('utility.php');
+$currentUser = "mojtaba_amiri@hotmail.co.uk";
+$taskCompleted = "completed";
+$stmt = Utility::databaseConnection()->prepare("Select user_input_command, nmap_log_returned, task_status From nmap WHERE username = ? and task_status = ? order by create_time DESC;");
+$stmt->bind_param("ss", $currentUser, $taskCompleted);
+$stmt->execute();
+$stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
+//$stmt->fetch();
+//print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
 
-<<<<<<< HEAD
-//$var = 123;
-//
-//
-//$uselessVariableKeeperDontKnowWhyYouWouldEverDoThis = [
-//    "variable\$var" => "\$var",
-//    "variable\$varValue" => "123",
-//];
-//
-//print $uselessVariableKeeperDontKnowWhyYouWouldEverDoThis["variable\$var"];
-//
-//
-////print_r($ip);
-////print_r("\n");
-////print_r($cidr);
-////
-=======
-$var = 123;
+while ($stmt->fetch()) {
+    print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
 
-
-$uselessVariableKeeperDontKnowWhyYouWouldEverDoThis = [
-    "variable\$var" => "\$var",
-    "variable\$varValue" => "123",
-];
-
-print $uselessVariableKeeperDontKnowWhyYouWouldEverDoThis["variable\$var"];
-
-
-//print_r($ip);
-//print_r("\n");
-//print_r($cidr);
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
-//
-
-
-
-
-
-<<<<<<< HEAD
-$nmap = "nmap 192.168.0.9";
-$whois = "whois pengui.uk";
-$random = "some bs";
-
-if(strpos($whois, "nmap") !== false){
-    print "found";
-} else {
-    print "not found";
 }
-=======
+$stmt->close();
 
 
-
-
->>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//
-//
-//if(!isset($_POST['tcp_sync_scan'])){
-//    $notSet = "post not set";
-//    echo $_POST['tcp_sync_scan'];
-//} else {
-//    $set = "tcp sync scan set";
-//    echo $_POST['tcp_sync_scan'];
-//}
-//
-////if ($_SERVER['REQUEST_METHOD'] == "POST"){
-////    echo $set;
-////} else {
-////    echo $notSet;
-////}
-//
-
-
-
-
-
-//
-//include('utility.php');
-//$currentUser = "mojtaba_amiri@hotmail.co.uk";
-//$taskCompleted = "completed";
-//$stmt = Utility::databaseConnection()->prepare("Select user_input_command, nmap_log_returned, task_status From nmap WHERE username = ? and task_status = ? order by create_time DESC;");
-//$stmt->bind_param("ss", $currentUser, $taskCompleted);
-//$stmt->execute();
-//$stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus);
-////$stmt->fetch();
-////print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
-//
-//while ($stmt->fetch()) {
-//    print_r("<tr> <td>" . $dbNmapCommand . "</td> <td>" . $dbNmapLogReturned . "</td> <td>" . $dbTaskStatus . "</td> </tr>");
-//
-//}
-//$stmt->close();
-//
-//
 
 
 

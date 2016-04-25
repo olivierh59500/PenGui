@@ -2,12 +2,17 @@
 error_reporting(-1); ini_set('display_errors', 1);
 require('sessionManagement.php');
 require('utility.php');
+<<<<<<< HEAD
 require('new_task.php');
+=======
+require('executeNmap.php');
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
 
 if (!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
+<<<<<<< HEAD
 $target = $_POST["nmap_Scan"];
 $sessionUser = $_SESSION['loginUser'];
 $userIpAddress = $_SERVER["REMOTE_ADDR"];
@@ -15,11 +20,23 @@ $taskStatus = "processing";
 $nmap = "nmap ";
 
 
+=======
+$scan = $_POST["nmap_Scan"];
+$userIpAddress = $_SERVER['REMOTE_ADDR'];
+$sessionUser = $_SESSION['loginUser'];
+$taskStatus = "pending";
+$nmap = "nmap ";
+
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
 //$checkCIDR = explode("/", $scan);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+<<<<<<< HEAD
     if (!isset($_POST['tcp_sync_scan']) & !isset($_POST['tcp_connect_scan']) & !isset($_POST['service_scan'])) {
+=======
+    if (!isset($_POST['tcp_sync_scan']) & !isset($_POST['tcp_connect_scan'])) {
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
         $scanTypeError = "Please select at least one scan type.";
     } else if (isset($_POST['tcp_sync_scan']) & isset($_POST['tcp_connect_scan'])) {
         $multiScanTypeError = "Please only select one scan type.";
@@ -27,6 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $tcpConnectScan = $_POST['tcp_connect_scan'];
     } else if (isset($_POST['tcp_sync_scan'])) {
         $tcpSyncScan = $_POST['tcp_sync_scan'];
+<<<<<<< HEAD
     } else if (isset($_POST['service_scan'])){
         $serviceScan = $_POST['service_scan'];
     }
@@ -35,19 +53,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = true;
     } else if (isset($tcpSyncScan)) {
         $nmapScanType = $nmap . $tcpSyncScan . $target;
+=======
+    }
+
+    if (!filter_var($scan, FILTER_VALIDATE_IP)) {
+        $error = true;
+    } else if (isset($tcpSyncScan)) {
+        $nmapScanType = $nmap . $tcpSyncScan . $scan;
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
         $stmt = Utility::databaseConnection()->prepare("INSERT INTO nmap (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $sessionUser, $nmapScanType, $userIpAddress, $taskStatus);
         $stmt->execute();
         $success = true;
+<<<<<<< HEAD
         $target = null;
         $startTask = new Task();
         $startTask->newTask($nmapScanType);
     } else if (isset($tcpConnectScan)) {
         $nmapScanType = $nmap . $tcpConnectScan . $target;
+=======
+        $scan = null;
+        exec("php backgroundTask.php >/dev/null 2>/dev/null &");
+    } else if (isset($tcpConnectScan)) {
+        $nmapScanType = $nmap . $tcpConnectScan . $scan;
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
         $stmt = Utility::databaseConnection()->prepare("INSERT INTO nmap (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $sessionUser, $nmapScanType, $userIpAddress, $taskStatus);
         $stmt->execute();
         $success = true;
+<<<<<<< HEAD
         $target = null;
         $stmt->close();
         $startTask = new Task();
@@ -70,6 +104,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
+=======
+        $scan = null;
+        $stmt->close();
+        exec("php backgroundTask.php >/dev/null 2>/dev/null &");
+    }
+}
+
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
 ?>
     <!DOCTYPE html>
     <html lang="en">
@@ -138,7 +180,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <a href="myscans.php"><i class="fa fa-fw fa-table"></i> MyScans</a>
                         </li>
                         <li>
+<<<<<<< HEAD
                             <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
+=======
+                            <a href="forms.html"><i class="fa fa-fw fa-edit"></i> Forms</a>
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
                         </li>
                         <li>
                             <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>
@@ -240,5 +286,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
         <!-- Bootstrap Core JavaScript -->
         <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
     </body>
     </html>

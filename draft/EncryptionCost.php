@@ -6,8 +6,13 @@
  * you server too much. 8-10 is a good baseline, and more is good if your servers
  * are fast enough.
  */
+<<<<<<< HEAD
 $timeTarget = 1;
 $cost = 14;
+=======
+$timeTarget = 0.5;
+$cost = 10;
+>>>>>>> 10f24b186e460bfca237fff6174f6b6fb5b3c2b4
 do {
     $cost++;
     $start = microtime(true);
