@@ -8,7 +8,6 @@ Class Task
 {
     function newTask($data)
     {
-        //$data =  "nmap -sV  pengui.uk";//implode(' ', array_slice($argv, 1));
         $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest'); //create connection to rabbitMQ server
         $channel = $connection->channel(); //V port for communication of data
         $channel->queue_declare('task_queue', false, true, false, false); //change the limit of the retries

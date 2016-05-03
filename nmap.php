@@ -1,5 +1,5 @@
 <?php
-error_reporting(-1); ini_set('display_errors', 1);
+//error_reporting(-1); ini_set('display_errors', 1);
 require('sessionManagement.php');
 require('utility.php');
 require('new_task.php');
@@ -18,7 +18,6 @@ $nmap = "nmap ";
 //$checkCIDR = explode("/", $scan);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
     if (!isset($_POST['tcp_sync_scan']) & !isset($_POST['tcp_connect_scan']) & !isset($_POST['service_scan'])) {
         $scanTypeError = "Please select at least one scan type.";
     } else if (isset($_POST['tcp_sync_scan']) & isset($_POST['tcp_connect_scan'])) {
@@ -67,7 +66,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = true;
     }
 }
-
 
 
 ?>
@@ -141,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
                         </li>
                         <li>
-                            <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>
+                            <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                         </li>
                         <li>
                             <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
@@ -196,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                     <?php
                                                     if(isset($error)) {
                                                         echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR:</strong> Please enter a valid IP address.</div>";
+                  <strong>ERROR:</strong> Please enter a valid IP address or domain name.</div>";
                                                     }else if (isset($success)) {
                                                         echo "<div class=\"alert alert-success\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
                   <strong>Success:</strong> Scan was successful, See My Scans for progress of your scans</div>";
@@ -224,9 +222,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                 <!-- /.col-lg-6 -->
                                             </form>
                                         </div>
-                                        <br><br>
-                                        <p>Nmap is a tool used for various network......</p>
-                                    </div>
+                                        <div class="col-lg-6">
+                                            <br>
+                                            <p>Nmap (Network Mapper) is an open source and free tool used for
+                                                    network discovery and security auditing. It comes with myriad of features
+                                                    such as; network inventory, monitoring hosts, service uptime, host discovery, service
+                                                    application name and versions, operating system fingerprinting and more. It’s supported
+                                                    on all operating systems and has two version; the command line and GUI (zenmap)</p>
+
+                                            <ul class="dl-horizontal">
+                                                <li>-sS (TCP SYN scan): This technique is often referred to as half-open scanning, because you don't open a full TCP connection. You send a SYN packet, as if you are going to open a real connection and then wait for a response. A SYN/ACK indicates the port is listening (open), while a RST (reset) is indicative of a non-listener. If no response is received after several retransmissions, the port is marked as filtered.</li>
+                                                <li> -sT (TCP Connect Scan): This technique is not as effective as TCP Sync scan because it has to establish a full three way handshake syn > syn,ack > ack this is most likely be logged by the server you are scanning against and syslog logging the scan and if there is a IDS involved being flagged.
+                                        </div>
                                 </div>
                             </div>
                             <!-- /#page-content-wrapper -->

@@ -8,11 +8,19 @@ require('utility.php');
 if (!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
-exec("php backgroundTask.php >/dev/null 2>/dev/null &");
+//exec("php backgroundTask.php >/dev/null 2>/dev/null &");
+
+function linkParse($data){
+    $url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
+    $data = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $data);
+    return $data;
+
+}
+
 ?>
 
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -123,7 +131,7 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                                         <h2>Tasks Pending</h2>
                                         <table class="table table-hover table-responsive">
                                             <thead>
-                                            <td>Nmap Scan</td>
+                                            <td>Scan</td>
                                             <td>Task Status</td>
                                             </thead>
                                             <tbody>
@@ -137,12 +145,12 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                                                     whois");
 
                                             $stmt->bind_param("ss", $currentUser, $currentUser);
-                                            $stmt->bind_result($dbNmapCommand, $dbTaskStatus);
+                                            $stmt->bind_result($dbCommand, $dbTaskStatus);
                                             $stmt->execute();
                                             $stmt->store_result();
                                             while ($stmt->fetch()) {
-                                                echo "<tr>  <td>" . htmlentities($dbNmapCommand, ENT_QUOTES) . "</td>" .
-                                                            "<td>" .  htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                                                echo "<tr>  <td>" . htmlentities($dbCommand, ENT_QUOTES) . "</td>" .
+                                                     "<td>" .  htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
                                             }
                                             $stmt->close(); ?>
                                             </tbody>
@@ -151,7 +159,7 @@ exec("php backgroundTask.php >/dev/null 2>/dev/null &");
                                         <h2>Tasks completed</h2>
                                         <table class="table table-hover table-responsive">
                                             <thead>
-                                            <td>Nmap Scan</td>
+                                            <td>Scan</td>
                                             <td>Result</td>
                                             <td>Task Status</td>
                                             </thead>
@@ -165,10 +173,12 @@ order by create_time desc");
                                             $stmt->bind_param("ss", $currentUser, $currentUser);
                                             $stmt->execute();
                                             $stmt->store_result();
-                                            $stmt->bind_result($dbNmapCommand, $dbNmapLogReturned, $dbTaskStatus, $dbCreateTime);
+                                            $stmt->bind_result($dbCommand, $dbLogReturned, $dbTaskStatus, $dbCreateTime);
                                             while ($stmt->fetch()) {
-                                                echo "<tr>  <td>" . htmlentities($dbNmapCommand, ENT_QUOTES) . "</td>
-                                                            <td>" . nl2br(htmlentities(trim($dbNmapLogReturned), ENT_QUOTES)) . "</td> 
+                                                $dbLogReturned = linkParse($dbLogReturned);
+                                                $dbCommand = linkParse($dbCommand);
+                                                echo "<tr>  <td>" . $dbCommand. "</td>
+                                                            <td>" . nl2br(trim($dbLogReturned), ENT_QUOTES) . "</td> 
                                                             <td>" . htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
                                             }
                                             $stmt->close(); ?>

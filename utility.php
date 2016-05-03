@@ -14,9 +14,9 @@ class Utility
             $stmt->execute();
             $stmt->bind_result($checkEmail);
             while ($stmt->fetch()) {
-                htmlentities($emailExists = "Email already exists please enter another email", ENT_QUOTES);
-                Utility::alert($emailExists);
-                exit();
+                htmlspecialchars($emailExists = "Email already exists please enter another email", ENT_QUOTES);
+                return $emailExists;
+                //Utility::alert($emailExists);
             }
             $stmt->close();
         }
@@ -35,7 +35,7 @@ class Utility
         return $connection;
     }
 
-    public static function alert($message) //temp  function just for dev, need proper error displaying 
+    public static function alert($message) //temp  function just for dev, need proper error displaying
     {
         echo '<script type="text/javascript">alert("' . htmlentities($message, ENT_QUOTES) . '")</script>';
     }

@@ -26,8 +26,10 @@ $callback = function($msg) {
         storeNmapResult($msg->body, $nmapResult);
     } else if (strpos($msg->body, "whois") !== false){
         $whoisResult = shell_exec(escapeshellcmd($msg->body));
-        storeWhoisResult($msg->body, $nmapResult);
-
+        storeWhoisResult($msg->body, $whoisResult);
+    } else if (strpos($msg->body, "testssl") !== false) {
+        $testSSResult = shell_exec($msg->body);
+        storeTestSSLResult($msg->body, $testSSResult);
     }
 
     echo " [x] Done", "\n";
@@ -43,6 +45,21 @@ while(count($channel->callbacks)) {
 
 $channel->close();
 $connection->close();
+
+function storeTestSSLResult($testSSLType, $testSSLResult) {
+    $taskStatus = "completed";
+    $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM sslChecker WHERE sslChecker_log_returned is null");
+    $stmt->execute();
+    $stmt->bind_result($dbId, $dbtestSSLCommand);
+    while ($stmt->fetch()) {
+        if ($dbtestSSLCommand === $testSSLType) {
+            $stmt = Utility::databaseConnection()->prepare("UPDATE sslChecker SET sslChecker_log_returned = ?, task_status = ? WHERE id = ?");
+            $stmt->bind_param("ssi", $testSSLResult, $taskStatus, $dbId);
+            $stmt->execute();
+        }
+    }
+    $stmt->close();
+}
 
 function storeNmapResult($nmapScanType, $nmapResult) {
     $taskStatus = "completed";
@@ -71,4 +88,8 @@ function storeWhoisResult($whoisScanCommand, $whoisResult) {
         $stmt->execute();
     }
     $stmt->close();
+}
+
+function simplifyNmapLog() {
+
 }

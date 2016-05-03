@@ -1,23 +1,70 @@
 <?php
 require('sessionManagement.php');
+require('utility.php');
+require('new_task.php');
 if(!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
-$sslChecker = $_POST['sslChecker'];
+$target = $_POST['sslChecker'];
 $userIpAddress = $_SERVER["REMOTE_ADDR"];
 $sessionUser = $_SESSION['loginUser'];
-$taskStatus = "pending";
+$taskStatus = "processing";
+$testSSL = "testssl ";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    
-//..
-}
+
+    if (!isset($_POST['test_all_vulnerabilities']) & !isset($_POST['poodle']) & !isset($_POST['heartbleed'])) {
+        $scanTypeError = "Please select at least one scan type.";
+    } else if (isset($_POST['test_all_vulnerabilities'])) {
+        $testAllVulnerabilities = $_POST['test_all_vulnerabilities'];
+    } else if (isset($_POST['poodle'])) {
+        $poodle = $_POST['poodle'];
+    } else if (isset($_POST['heartbleed'])) {
+        $heartbleed = $_POST['heartbleed'];
+    }
+
+    if (!filter_var("http://www." . $target, FILTER_VALIDATE_URL)) {
+        $error = true;
+    }  else if (isset($testAllVulnerabilities)) {
+        $sslCheckerAllVuln = $testSSL . $testAllVulnerabilities . $target;
+        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $sessionUser, $sslCheckerAllVuln, $userIpAddress, $taskStatus);
+        $stmt->execute();
+        $success = true;
+        $target = null;
+        $startTask = new Task();
+        $startTask->newTask($sslCheckerAllVuln);
+    } else if (isset($poodle)) {
+        $sslCheckerPoodle = $testSSL . $poodle . $target;
+        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $sessionUser, $sslCheckerPoodle, $userIpAddress, $taskStatus);
+        $stmt->execute();
+        $success = true;
+        $target = null;
+        $stmt->close();
+        $startTask = new Task();
+        $startTask->newTask($sslCheckerPoodle);
+
+    } else if (isset($heartbleed)) {
+        $sslCheckerHeartbleed = $testSSL . $heartbleed . $target;
+        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $sessionUser, $sslCheckerHeartbleed, $userIpAddress, $taskStatus);
+        $stmt->execute();
+        $success = true;
+        $target = null;
+        $stmt->close();
+        $startTask = new Task();
+        $startTask->newTask($sslCheckerHeartbleed);
+    } else {
+        $error = true;
+    }
+}//end of post request
 
 ?>
 
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -145,13 +192,105 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                            <strong>Success:</strong> Scan was successful, See My Scans for progress of your scans</div>";
                                                 }
                                                 ?>
+                                                <h4> Scan type: </h4>
+                                                <label class="checkbox-inline">
+                                                    <input name="test_all_vulnerabilities" type="checkbox" value="-U "> Test All Vulnerabilities</label>
+                                                <label class="checkbox-inline">
+                                                    <input name="heartbleed" type="checkbox" value="--heartbleed "> Heartbleed</label>
+                                                <label class="checkbox-inline">
+                                                    <input name="poodle" type="checkbox" value="--poodle "> Poodle</label>
+
+                                                <?php if(isset($scanTypeError)) {
+                                                    echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
+                  <strong>ERROR: </strong>" . $scanTypeError. "</div>";
+                                                } else if (isset($multiScanTypeError)) {
+                                                    echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
+                  <strong>ERROR: </strong>" . $multiScanTypeError. "</div>";
+                                                }
+
+                                                ?>
+
+
                                             </div>
                                             <!-- /.col-lg-6 -->
                                         </form>
                                     </div>
-                                    <br><br> <br><br><br><br>
-                                    <p>SSL CHECKER</p>
+                                    <br><br><br><br><br><br>
                                 </div>
+                                <!-- Page Content -->
+                                <div id="page-content-wrapper">
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h2>Tasks Pending</h2>
+                                                <table class="table table-hover table-responsive">
+                                                    <thead>
+                                                    <td>Scan</td>
+                                                    <td>Task Status</td>
+                                                    </thead>
+                                                    <tbody>
+                                                    <?php
+                                                    $currentUser = $_SESSION['loginUser'];
+                                                    $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, task_status FROM sslChecker WHERE task_status = 'processing' AND username = ? ORDER BY create_time");
+
+                                                    $stmt->bind_param("s", $currentUser);
+                                                    $stmt->bind_result($dbCommand, $dbTaskStatus);
+                                                    $stmt->execute();
+                                                    $stmt->store_result();
+                                                    while ($stmt->fetch()) {
+                                                        echo "<tr>  <td>" . htmlentities($dbCommand, ENT_QUOTES) . "</td>" .
+                                                            "<td>" .  htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                                                    }
+                                                    $stmt->close(); ?>
+                                                    </tbody>
+                                                </table>
+                                                <!--Table Continue-->
+                                                <h2>Tasks completed</h2>
+                                                <table class="table table-hover table-responsive">
+                                                    <thead>
+                                                    <td>Scan</td>
+                                                    <td>Result</td>
+                                                    <td>Task Status</td>
+                                                    </thead>
+                                                    <tbody>
+                                                    <?php //Task Completed
+                                                    $currentUser = $_SESSION['loginUser'];
+                                                    $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, sslChecker_log_returned, task_status, create_time from sslChecker where username= ? and task_status='completed' order by create_time desc");
+                                                    $stmt->bind_param("s", $currentUser);
+                                                    $stmt->execute();
+                                                    $stmt->store_result();
+                                                    $stmt->bind_result($dbCommand, $dbLogReturned, $dbTaskStatus, $dbCreateTime);
+                                                    while ($stmt->fetch()) {
+                                                        echo "<tr>  <td>" . htmlentities($dbCommand, ENT_QUOTES) . "</td>
+                                                            <td>" . nl2br(htmlentities(trim($dbLogReturned), ENT_QUOTES)) . "</td> 
+                                                            <td>" . htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                                                    }
+                                                    $stmt->close(); ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
                             </div>
                         </div>
                         <!-- /#page-content-wrapper -->

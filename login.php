@@ -1,28 +1,53 @@
 <?php
-//error_reporting(-1);
-//ini_set('display_errors', 1);
+error_reporting(-1);
+ini_set('display_errors', 1);
+require('utility.php');
+require('sessionManagement.php');
 require('recaptcha/src/autoload.php');
+
 $siteKey = '6Le-0h0TAAAAAMBEJikzNagQH4kLHF9xMuzaIAfL';
 $secret = '6Le-0h0TAAAAAID82fxX_0hmGHoP-X-utZOtmtiu';
 $lang = 'en';
+$emailAuthentication = isset($_POST['email']) ? $_POST['email'] : null;
+$passwordAuthentication = isset($_POST['password']) ? $_POST['password'] : null;
+$error = array();
 
-if (isset($_POST['g-recaptcha-response']))
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    echo "im on the post";
+    if (empty($emailAuthentication)) {
+        $error[] = $emailError = "Email is required";
+    }
+    if (empty($passwordAuthentication)) {
+        $error[] = $passwordAuthenticationError = "Password is required";
+    }
+    $stmt = Utility::databaseConnection()->prepare("SELECT Email, Password FROM personal_details WHERE Email = ?");
+    $stmt->bind_param("s", $emailAuthentication);
+    $stmt->execute();
+    $stmt->bind_result($dbEmail, $dbPassword);
+    $stmt->fetch();
+    if ($dbEmail == $emailAuthentication) {
+        if (password_verify($passwordAuthentication, $dbPassword)) { //This function is safe against timing attacks.
+            Session::manageSession($emailAuthentication);
+        } else {
+            $error[] = $loginError = "Email or Password is incorrect \n or CAPTCHA is not set. Please try again";
+        }
+    } else {
+        $error[] = $loginError = "Email or Password is incorrect \n or CAPTCHA is not set. Please try again";
+    }
+    $stmt->close();
+}//end of post
+
+if (isset($_POST['g-recaptcha-response']) && empty($error)) {
     var_export($_POST);
-// If the form submission includes the "g-captcha-response" field
-// Create an instance of the service using your secret
     $recaptcha = new \ReCaptcha\ReCaptcha($secret);
-
-// Make the call to verify the response and also pass the user's IP address
     $resp = $recaptcha->verify($_POST['g-recaptcha-response'], $_SERVER['REMOTE_ADDR']);
-
     if ($resp->isSuccess()) {
         header("location: index.php");
-    } else {
-//        foreach ($resp->getErrorCodes() as $code) {
-//            echo '<tt>', $code, '</tt> ';
-//        }
     }
-    ?>
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -73,22 +98,28 @@ if (isset($_POST['g-recaptcha-response']))
                             <fieldset>
                                 <div class="form-group">
                                     <input class="form-control" placeholder="E-mail" name="email" type="email"
-                                           autofocus>
+                                           value="<?php echo htmlspecialchars(isset($_POST['email']) ? $_POST['email'] : null); ?>" autofocus required>
                                 </div>
                                 <div class="form-group">
                                     <input class="form-control" placeholder="Password" name="password" type="password"
-                                           value="">
+                                           value="" required>
                                 </div>
                                 <div class="checkbox">
                                     <label>
                                         <input name="remember" type="checkbox" value="Remember Me">Remember Me
                                     </label>
                                 </div>
-                                <!-- Change this to a button or input when using this as a form -->
-                                <div class="g-recaptcha" data-sitekey="<?php echo $siteKey; ?>"></div>
+                                <div class="g-recaptcha" data-sitekey="<?php echo htmlspecialchars($siteKey); ?>"></div>
                                 <script type="text/javascript"
-                                        src="https://www.google.com/recaptcha/api.js?hl=<?php echo $lang; ?>">
+                                        src="https://www.google.com/recaptcha/api.js?hl=<?php echo htmlspecialchars($lang); ?>">
                                 </script>
+
+                                <div class="list-group">
+                                    <?php foreach($error as $err) {
+                                            echo "<a href=\"#\" class=\"list-group-item list-group-item-danger\">$err</a>";
+                                        }
+                                    ?>
+                                </div>
                                 <button class="btn btn-lg btn-success btn-block" type="submit">Login</button>
                                 <a href="register.php" class="btn btn-lg btn-success btn-block"
                                    type="submit">Register</a>
@@ -107,40 +138,3 @@ if (isset($_POST['g-recaptcha-response']))
 </body>
 <script src='https://www.google.com/recaptcha/api.js'></script>
 </html>
-<?php
-require('utility.php');
-require('sessionManagement.php');
-
-$emailAuthentication = $_POST['email'];
-$passwordAuthentication = $_POST['password'];
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    if (empty($emailAuthentication)) {
-        Utility::alert(htmlentities("Email is required", ENT_QUOTES));
-        exit();
-    }
-    if (empty($passwordAuthentication)) {
-        Utility::alert(htmlentities("Password is required", ENT_QUOTES));
-        exit();
-    }
-
-    $stmt = Utility::databaseConnection()->prepare("SELECT Email, Password FROM personal_details WHERE Email = ?");
-    $stmt->bind_param("s", $emailAuthentication);
-    $stmt->execute();
-    $stmt->bind_result($dbEmail, $dbPassword);
-    $stmt->fetch();
-    if ($dbEmail == $emailAuthentication) {
-        if (password_verify($passwordAuthentication, $dbPassword)) { //Timing attack safe string comparison hash_equals(Known_Hash, User_Supplied)
-            Session::manageSession($emailAuthentication);
-        } else {
-            Utility::alert(htmlentities("Email or Password is incorrect. Please try again.,", ENT_QUOTES));
-            exit();
-        }
-    } else {
-        Utility::alert(htmlentities("Email or Password is incorrect. Please try again.", ENT_QUOTES));
-        exit();
-    }
-    $stmt->close();
-}//end of post method
-?>
