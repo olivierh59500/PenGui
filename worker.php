@@ -12,7 +12,6 @@ require('utility.php');
 require_once __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
-
 $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 $channel->queue_declare('task_queue', false, true, false, false);
@@ -20,7 +19,7 @@ $channel->queue_declare('task_queue', false, true, false, false);
 echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 
 $callback = function($msg) {
-    echo " [x] Received ", $msg->body, "\n";
+    echo " [x] Received ", $msg->body, "\n"; //$msg->body: converts message object to a string
     if(strpos($msg->body, "nmap") !== false) {
         $nmapResult = shell_exec(escapeshellcmd($msg->body));
         storeNmapResult($msg->body, $nmapResult);
@@ -56,8 +55,21 @@ function storeTestSSLResult($testSSLType, $testSSLResult) {
             $stmt = Utility::databaseConnection()->prepare("UPDATE sslChecker SET sslChecker_log_returned = ?, task_status = ? WHERE id = ?");
             $stmt->bind_param("ssi", $testSSLResult, $taskStatus, $dbId);
             $stmt->execute();
+            //function here
+            simplifySSLResult($testSSLResult, $dbId);
         }
     }
+    $stmt->close();
+}
+function simplifySSLResult($testSSLResult, $id) {
+    $testSSLResult = preg_grep("/(not vulnerable|VULNERABLE)/", explode("\n", $testSSLResult));
+    foreach($testSSLResult as $value){
+        $testSSLResultSimplified = preg_replace("#\e.*?m#", "", $value);
+        $sslResult = preg_split("/\(timed out\)/", $testSSLResultSimplified);
+    }
+    $stmt = Utility::databaseConnection()->prepare("UPDATE sslChecker SET sslChecker_log_simplified = ? WHERE id = ?");
+    $stmt->bind_param("si", $sslResult[0], $id);
+    $stmt->execute();
     $stmt->close();
 }
 

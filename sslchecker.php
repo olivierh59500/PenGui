@@ -61,6 +61,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }//end of post request
 
+
+function cveLinker($data) {
+
+    $url = '/(CVE)(=?.*[0-9])/';
+    $data = preg_replace($url, '<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=$0" target="_blank" title="$0">$0</a>', $data);
+    return $data;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -74,7 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="author" content="Mojtaba Amiri">
 
     <title>PenGui SSL Checker</title>
-
     <!-- Bootstrap Core CSS -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
@@ -255,14 +262,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                                     <tbody>
                                                     <?php //Task Completed
                                                     $currentUser = $_SESSION['loginUser'];
-                                                    $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, sslChecker_log_returned, task_status, create_time from sslChecker where username= ? and task_status='completed' order by create_time desc");
+                                                    $stmt = Utility::databaseConnection()->prepare("SELECT user_input_command, sslChecker_log_simplified, task_status, create_time from sslChecker where username= ? and task_status='completed' order by create_time desc");
                                                     $stmt->bind_param("s", $currentUser);
                                                     $stmt->execute();
                                                     $stmt->store_result();
                                                     $stmt->bind_result($dbCommand, $dbLogReturned, $dbTaskStatus, $dbCreateTime);
                                                     while ($stmt->fetch()) {
+                                                        $dbLogReturned = cveLinker($dbLogReturned);
                                                         echo "<tr>  <td>" . htmlentities($dbCommand, ENT_QUOTES) . "</td>
-                                                            <td>" . nl2br(htmlentities(trim($dbLogReturned), ENT_QUOTES)) . "</td> 
+                                                            <td>" . nl2br(trim($dbLogReturned)) . "</td> 
                                                             <td>" . htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
                                                     }
                                                     $stmt->close(); ?>
@@ -272,25 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         </div>
                                     </div>
                                 </div>
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
+
                             </div>
                         </div>
                         <!-- /#page-content-wrapper -->
@@ -298,53 +288,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
             </div>
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </div>
 </div>
 <!-- jQuery -->

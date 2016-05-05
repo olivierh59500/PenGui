@@ -13,7 +13,7 @@ Class Task
         $channel->queue_declare('task_queue', false, true, false, false); //change the limit of the retries
 
         if (empty($data)) {
-            $data = "task empty no data was passed";
+            echo $data = "ERROR: No data was passed";
         } else {
             $msg = new AMQPMessage($data,
                 array('delivery_mode' => 2) # make message persistent
