@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 ?>
     <!DOCTYPE html>
-    <html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 
     <head>
         <meta charset="utf-8">
@@ -88,6 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Custom Fonts -->
         <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
               rel="stylesheet" type="text/css">
+
     </head>
 
     <body>

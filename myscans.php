@@ -8,13 +8,17 @@ require('utility.php');
 if (!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
-//exec("php backgroundTask.php >/dev/null 2>/dev/null &");
 
 function linkParse($data){
+//    $url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
+//    $data = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $data);
+//    return $data;
     $url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
     $data = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $data);
-    return $data;
 
+    $url = '/(CVE)(=?.*[0-9])/';
+    $data = preg_replace($url, '<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=$0" target="_blank" title="$0">$0</a>', $data);
+    return $data;
 }
 
 ?>
@@ -138,19 +142,22 @@ function linkParse($data){
                                             <?php
                                             $currentUser = $_SESSION['loginUser'];
                                             $stmt = Utility::databaseConnection()->prepare("
-                                                    SELECT * FROM (SELECT user_input_command, task_status FROM nmap WHERE task_status = 'processing' AND username = ? ORDER BY create_time)
-                                                    nmap
-                                                     UNION ALL 
-                                                    SELECT * FROM (SELECT user_input_command, task_status FROM whois WHERE task_status = 'processing' AND username = ? ORDER BY create_time)
-                                                    whois");
-
-                                            $stmt->bind_param("ss", $currentUser, $currentUser);
-                                            $stmt->bind_result($dbCommand, $dbTaskStatus);
+SELECT user_input_command, task_status, create_time FROM nmap WHERE task_status = 'processing' AND username = ?
+UNION 
+SELECT user_input_command, task_status, create_time FROM whois WHERE task_status = 'processing' AND username = ?
+UNION 
+SELECT user_input_command, task_status, create_time FROM sslChecker WHERE task_status = 'processing' AND username = ?
+ORDER BY create_time DESC;");
+                                            $stmt->bind_param("sss", $currentUser, $currentUser, $currentUser);
                                             $stmt->execute();
-                                            $stmt->store_result();
-                                            while ($stmt->fetch()) {
-                                                echo "<tr>  <td>" . htmlentities($dbCommand, ENT_QUOTES) . "</td>" .
-                                                     "<td>" .  htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                                            $stmt->bind_result($dbCommand, $dbTaskStatus, $dbCreateTime);
+                                            while($stmt->fetch()) {
+                                                if(empty($dbCommand)){
+                                                    echo "<tr><td> Nothing to process </td></tr>";
+                                                } else {
+                                                    echo "<tr>  <td>" . htmlentities($dbCommand, ENT_QUOTES) . "</td>" .
+                                                        "<td>" . htmlentities($dbTaskStatus, ENT_QUOTES) . "</td> </tr>";
+                                                }
                                             }
                                             $stmt->close(); ?>
                                             </tbody>
@@ -166,11 +173,14 @@ function linkParse($data){
                                             <tbody>
                                             <?php //Task Completed
                                             $currentUser = $_SESSION['loginUser'];
-                                            $stmt = Utility::databaseConnection()->prepare("select user_input_command, nmap_log_returned, task_status, create_time from nmap where username=? and task_status='completed'
-union
-select user_input_command, whois_log_returned, task_status, create_time from whois where username=? and task_status='completed'
-order by create_time desc");
-                                            $stmt->bind_param("ss", $currentUser, $currentUser);
+                                            $stmt = Utility::databaseConnection()->prepare("
+SELECT user_input_command, nmap_log_simplified, task_status, create_time FROM nmap WHERE username=? AND task_status='completed'
+UNION
+SELECT user_input_command, whois_log_returned, task_status, create_time FROM whois WHERE username=? AND task_status='completed'
+UNION
+SELECT user_input_command, sslChecker_log_simplified, task_status, create_time from sslChecker where username= ? and task_status='completed'
+ORDER BY create_time DESC");
+                                            $stmt->bind_param("sss", $currentUser, $currentUser, $currentUser);
                                             $stmt->execute();
                                             $stmt->store_result();
                                             $stmt->bind_result($dbCommand, $dbLogReturned, $dbTaskStatus, $dbCreateTime);

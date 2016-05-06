@@ -1,12 +1,48 @@
 <?php
 require('sessionManagement.php');
+require('utility.php');
 
 if(!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
+
+$currentUser = isset($_SESSION['loginUser']) ? $_SESSION['loginUser'] : null;
+$firstName = isset($_POST["first_Name"]) ? $_POST["first_Name"] : null; //php ternary return value
+$lastName = isset($_POST["last_Name"]) ? $_POST["last_Name"] : null;
+$email = isset($_POST["email"]) ? $_POST["email"] : null;
+$userPassword = isset($_POST["password"]) ? $_POST["password"] : null;
+$confirmPassword = isset($_POST["confirm_Password"]) ? $_POST["confirm_Password"] : null;
+$error = array();
+
+$stmt = Utility::databaseConnection()->prepare("SELECT First_Name, Last_Name, Email, Password FROM personal_details WHERE Email = ?");
+$stmt->bind_param("s", $currentUser);
+$stmt->execute();
+$stmt->bind_result($dbFirstName, $dbLastName, $dbEmail, $dbPassword);
+while ($stmt->fetch()) {
+    if ($userPassword !== $confirmPassword) {
+        $error[] = "Password doesn't match";
+    } else if (password_verify($userPassword, $dbPassword)){
+        $error[] = "password cannot be the same as your old password";
+    } else if (empty($error)) {
+        //set new password
+        $salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM); //creating the salt
+        $password = password_hash($userPassword, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $salt]); //cost=14 ==> 0.5 second delay
+        var_dump($password);
+        $stmt = Utility::databaseConnection()->prepare("UPDATE personal_details SET Password = ? WHERE Email = ?");
+        $stmt->bind_param("ss", $password, $email);
+        $stmt->execute();
+        $stmt->close();
+        $success = "Password successfully changed";
+    }
+
+
+}
+$stmt->close();
+
+
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -104,10 +140,48 @@ if(!isset($_SESSION['loginUser'])) {
                             User Settings
                             <small>Overview</small>
                         </h1>
+                        <form role="form" method="post">
+                            <fieldset>
+                        <div class="col-lg-4">
+                        <div class="form-group">
+                            <input class="form-control" placeholder="First Name" name="first_Name" type="text"
+                                   value="<?php echo htmlspecialchars(isset($dbFirstName) ? $dbFirstName : null);?>" autofocus required disabled>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Last Name" name="last_Name" type="text"
+                                   value="<?php echo htmlspecialchars(isset($dbLastName) ? $dbLastName : null);?>" required disabled>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Email" name="email" type="email"
+                                   value="<?php echo htmlspecialchars(isset($dbEmail) ? $dbEmail : null);?>" required disabled>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Password" name="password" type="password"
+                                   value="" required>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" placeholder="Confirm Password" name="confirm_Password"
+                                   type="password" value="" required>
+                        </div>
+                            <div class="list-group">
+                                <?php if(isset($error)) {
+                                    foreach($error as $err) {
+                                        echo "<a href=\"#\" class=\"list-group-item list-group-item-danger\">$err</a>";
+                                    }
+                                } else if(isset($success)){
+                                    echo "<a href=\"#\" class=\"list-group-item list-group-item-success\">$success</a>";
+                                }
+                                ?>
+                            </div>
+                            <button class="btn btn-lg btn-success btn-block" type="submit">Save Changes</button>
+                            <button class="btn btn-lg btn-success btn-block" type="reset">Reset</button>
+                            </fieldset>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
         <!-- /#wrapper -->
     </div>
     <!-- jQuery -->

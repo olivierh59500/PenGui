@@ -56,11 +56,25 @@ function storeTestSSLResult($testSSLType, $testSSLResult) {
             $stmt->bind_param("ssi", $testSSLResult, $taskStatus, $dbId);
             $stmt->execute();
             //function here
-            simplifySSLResult($testSSLResult, $dbId);
+            if(strpos($testSSLResult, "Testing vulnerabilities")) {
+                fullSSLLog($testSSLResult, $dbId);
+            } else {
+                simplifySSLResult($testSSLResult, $dbId);
+            }
         }
     }
     $stmt->close();
 }
+
+function fullSSLLog($sslResult, $id) {
+    $removeSymbols =  preg_replace("#\e.*?m#", "", $sslResult);
+    $split = preg_split("#(Testing vulnerabilities)#",$removeSymbols);
+    $stmt = Utility::databaseConnection()->prepare("UPDATE sslChecker SET sslChecker_log_simplified = ? WHERE id = ?");
+    $stmt->bind_param("si", $split[1], $id);
+    $stmt->execute();
+    $stmt->close();
+}
+
 function simplifySSLResult($testSSLResult, $id) {
     $testSSLResult = preg_grep("/(not vulnerable|VULNERABLE)/", explode("\n", $testSSLResult));
     foreach($testSSLResult as $value){
@@ -83,9 +97,19 @@ function storeNmapResult($nmapScanType, $nmapResult) {
             $stmt = Utility::databaseConnection()->prepare("UPDATE nmap SET nmap_log_returned = ?, task_status = ? WHERE id = ?");
             $stmt->bind_param("ssi", $nmapResult, $taskStatus, $dbId);
             $stmt->execute();
+            nmapLogSimplified($nmapResult, $dbId);
         }
     }
     $stmt->close();
+}
+
+function nmapLogSimplified($nmapResult, $id) {
+    $simplifyLog =  preg_split("#(ports)#", $nmapResult);
+    $resultingLog = preg_split("#(Nmap done)#", $simplifyLog[1]);
+//    echo $secondSplit[0];
+    $stmt = Utility::databaseConnection()->prepare("UPDATE nmap SET nmap_log_simplified = ? WHERE id = ?");
+    $stmt->bind_param("si", $resultingLog[0], $id);
+    $stmt->execute();
 }
 
 function storeWhoisResult($whoisScanCommand, $whoisResult) {

@@ -6,9 +6,9 @@ if(!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
-$target = $_POST['sslChecker'];
-$userIpAddress = $_SERVER["REMOTE_ADDR"];
-$sessionUser = $_SESSION['loginUser'];
+$target = isset($_POST['sslChecker']) ? $_POST['sslChecker'] : null;
+$userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
+$sessionUser = isset($_SESSION['loginUser']) ? $_SESSION['loginUser'] : null ;
 $taskStatus = "processing";
 $testSSL = "testssl ";
 
@@ -61,12 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }//end of post request
 
-
 function cveLinker($data) {
-
-    $url = '/(CVE)(=?.*[0-9])/';
-    $data = preg_replace($url, '<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=$0" target="_blank" title="$0">$0</a>', $data);
-    return $data;
+        $url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
+        $data = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $data);
+    
+        $url = '/(CVE)(=?.*[0-9])/';
+        $data = preg_replace($url, '<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=$0" target="_blank" title="$0">$0</a>', $data);
+        return $data;
 }
 
 ?>

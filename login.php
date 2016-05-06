@@ -13,7 +13,6 @@ $passwordAuthentication = isset($_POST['password']) ? $_POST['password'] : null;
 $error = array();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    echo "im on the post";
     if (empty($emailAuthentication)) {
         $error[] = $emailError = "Email is required";
     }
@@ -25,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $stmt->bind_result($dbEmail, $dbPassword);
     $stmt->fetch();
-    if ($dbEmail == $emailAuthentication) {
+    if ($dbEmail === $emailAuthentication) {
         if (password_verify($passwordAuthentication, $dbPassword)) { //This function is safe against timing attacks.
             Session::manageSession($emailAuthentication);
         } else {
