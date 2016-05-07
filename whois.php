@@ -15,7 +15,10 @@ $sessionUser = $_SESSION['loginUser'];
 $taskStatus = "processing";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (empty($whoIsScan)) { $error = true; }
+    if (empty($whoIsScan)) {
+        $error = true;
+    }
+    //strip the [http://www.] get the domain name and then add the http or https to the link to get validated
     if(!filter_var("http://www." . $whoIsScan, FILTER_VALIDATE_URL) && !filter_var($whoIsScan, FILTER_VALIDATE_IP)) {
         $error = true;
     } else {
@@ -106,7 +109,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                     </li>
                     <li>
-                        <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
+                        <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
+                    </li>
+                    <li>
+                        <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                     </li>
                     <li>
                         <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i
@@ -166,29 +172,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             <!-- /.col-lg-6 -->
                                         </form>
                                     </div>
-                                    <br><br><br><br><br><br>
-                                    <h4><p>A WHOIS search will provide information regarding a domain name, such as example.com. It may include information, such as domain ownership, where and                                            when registered, expiration date, and the nameservers assigned to the domain.</p>
-                                    <p>Uses of WHOIS: </p>
-                                        <ul class="dl-horizontal">
-                                            <li>Determine whether a domain is available</li>
-                                            <li>Contact network administrators regarding technical matters</li>
-                                            <li>Diagnose registration difficulties</li>
-                                            <li>Contact web administrators for resolution of technical matters associated with a domain name</li>
-                                            <li>Obtain the real world identity, business location and contact information of an online merchant or business, or generally, any organization that has an online presence</li>
-                                            <li>Associate a company, organization, or individual with a domain name, and to identify the party that is operating a web or other publicly accessible service using a domain name, for commercial or other purposes</li>
-                                            <li>Contact a domain name registrant for the purpose of discussing and negotiating a secondary market transaction related to a registered domain name</li>
-                                            <li>Notify a domain name registrant of the registrant's obligation to maintain accurate registration information</li>
-                                            <li>Contact a domain name registrant on matters related to the protection and enforcement of intellectual property rights</li>
-                                            <li>Establish or look into an identity in cyberspace, and as part of an incident response following an Internet or computer attack- (Security professionals and law enforcement agents use WHOIS to identify points of contact for a domain name)</li>
-                                            <li>Gather investigative leads (i.e., to identify parties from whom additional information might be obtained)- Law enforcement agents use WHOIS to find email addresses and attempt to identify the location of an alleged perpetrator of a crime involving fraud</li>
-                                            <li>Investigate spam- law enforcement agents look to the WHOIS database to collect information on the website advertised in the spam</li>
-                                        </ul>
-
-
-                                    </h4>
-
                                 </div>
-
+                                <br>
+                                <p>A WHOIS search will provide information regarding a domain name, such as example.com. It may include information, such as domain ownership, where and                                            when registered, expiration date, and the nameservers assigned to the domain.</p>
+                                <p>Uses of WHOIS: </p>
+                                <ul class="dl-horizontal">
+                                    <li>Determine whether a domain is available</li>
+                                    <li>Contact network administrators regarding technical matters</li>
+                                    <li>Diagnose registration difficulties</li>
+                                    <li>Contact web administrators for resolution of technical matters associated with a domain name</li>
+                                    <li>Obtain the real world identity, business location and contact information of an online merchant or business, or generally, any organization that has an online presence</li>
+                                    <li>Associate a company, organization, or individual with a domain name, and to identify the party that is operating a web or other publicly accessible service using a domain name, for commercial or other purposes</li>
+                                    <li>Contact a domain name registrant for the purpose of discussing and negotiating a secondary market transaction related to a registered domain name</li>
+                                    <li>Notify a domain name registrant of the registrant's obligation to maintain accurate registration information</li>
+                                    <li>Contact a domain name registrant on matters related to the protection and enforcement of intellectual property rights</li>
+                                    <li>Establish or look into an identity in cyberspace, and as part of an incident response following an Internet or computer attack- (Security professionals and law enforcement agents use WHOIS to identify points of contact for a domain name)</li>
+                                    <li>Gather investigative leads (i.e., to identify parties from whom additional information might be obtained)- Law enforcement agents use WHOIS to find email addresses and attempt to identify the location of an alleged perpetrator of a crime involving fraud</li>
+                                    <li>Investigate spam- law enforcement agents look to the WHOIS database to collect information on the website advertised in the spam</li>
+                                </ul>
                             </div>
                         </div>
                         <!-- /#page-content-wrapper -->

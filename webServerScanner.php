@@ -1,73 +1,37 @@
 <?php
-require('sessionManagement.php');
+//error_reporting(-1); ini_set('display_errors', 1);
+//require('loginAuthentication.php');
 require('utility.php');
+require('sessionManagement.php');
 require('new_task.php');
+
 if(!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
-$target = isset($_POST['sslChecker']) ? $_POST['sslChecker'] : null;
-$userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
-$sessionUser = isset($_SESSION['loginUser']) ? $_SESSION['loginUser'] : null ;
+$niktoScanTarget = isset($_POST['nikto_scan']) ? $_POST['nikto_scan'] : null;
+$userIpAddress = $_SERVER["REMOTE_ADDR"];
+$sessionUser = $_SESSION['loginUser'];
 $taskStatus = "processing";
-$testSSL = "testssl ";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    if (!isset($_POST['test_all_vulnerabilities']) & !isset($_POST['poodle']) & !isset($_POST['heartbleed'])) {
-        $scanTypeError = "Please select at least one scan type.";
-    } else if (isset($_POST['test_all_vulnerabilities'])) {
-        $testAllVulnerabilities = $_POST['test_all_vulnerabilities'];
-    } else if (isset($_POST['poodle'])) {
-        $poodle = $_POST['poodle'];
-    } else if (isset($_POST['heartbleed'])) {
-        $heartbleed = $_POST['heartbleed'];
-    }
-
-    if (!filter_var("http://www." . $target, FILTER_VALIDATE_URL)) {
+    if (empty($niktoScanTarget)) {
         $error = true;
-    }  else if (isset($testAllVulnerabilities)) {
-        $sslCheckerAllVuln = $testSSL . $testAllVulnerabilities . $target;
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $sessionUser, $sslCheckerAllVuln, $userIpAddress, $taskStatus);
-        $stmt->execute();
-        $success = true;
-        $target = null;
-        $startTask = new Task();
-        $startTask->newTask($sslCheckerAllVuln);
-    } else if (isset($poodle)) {
-        $sslCheckerPoodle = $testSSL . $poodle . $target;
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $sessionUser, $sslCheckerPoodle, $userIpAddress, $taskStatus);
-        $stmt->execute();
-        $success = true;
-        $target = null;
-        $stmt->close();
-        $startTask = new Task();
-        $startTask->newTask($sslCheckerPoodle);
-
-    } else if (isset($heartbleed)) {
-        $sslCheckerHeartbleed = $testSSL . $heartbleed . $target;
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $sessionUser, $sslCheckerHeartbleed, $userIpAddress, $taskStatus);
-        $stmt->execute();
-        $success = true;
-        $target = null;
-        $stmt->close();
-        $startTask = new Task();
-        $startTask->newTask($sslCheckerHeartbleed);
+    }
+    if(!filter_var($niktoScanTarget, FILTER_VALIDATE_URL) && !filter_var($niktoScanTarget, FILTER_VALIDATE_IP)) {
+        $error = true;
     } else {
-        $error = true;
+        $location = "perl /var/www/html/vendor/nikto/program/nikto.pl -C all -no404 -maxtime 500 -host ";
+        $nikto = $location . $niktoScanTarget; //need to remove the www. from the string so need to use explode string function
+        $stmt = Utility::databaseConnection()->prepare("
+                INSERT INTO nikto (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss",$sessionUser, $nikto, $userIpAddress, $taskStatus);
+        $stmt->execute();
+        $success = true;
+        //call the Task newTask function to queue the job
+        $startTask = new Task();
+        $startTask->newTask($nikto);
     }
-}//end of post request
-
-function cveLinker($data) {
-        $url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
-        $data = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $data);
-    
-        $url = '/(CVE)(=?.*[0-9])/';
-        $data = preg_replace($url, '<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=$0" target="_blank" title="$0">$0</a>', $data);
-        return $data;
 }
 
 ?>
@@ -82,7 +46,8 @@ function cveLinker($data) {
     <meta name="description" content="">
     <meta name="author" content="Mojtaba Amiri">
 
-    <title>PenGui SSL Checker</title>
+    <title>PenGui Web Server Scanner</title>
+
     <!-- Bootstrap Core CSS -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
@@ -140,10 +105,10 @@ function cveLinker($data) {
                     <li>
                         <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
                     </li>
-                    <li class="active">
+                    <li>
                         <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
                     </li>
                     <li>
@@ -168,68 +133,61 @@ function cveLinker($data) {
             </div>
             <!-- /.navbar-collapse -->
         </nav>
+
         <div id="page-wrapper">
             <div class="container-fluid">
                 <!-- Page Heading -->
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            SSL
-                            <small>Check your SSL </small>
+                            Nikto
+                            <small>Web Server Scanner</small>
                         </h1>
                         <!-- Page Content -->
                         <div id="page-content-wrapper">
                             <div class="container-fluid">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <h1>SSL Scan</h1>
-
-                                        <form class="form-horizontal" role="form" method="post" action="sslchecker.php">
+                                        <h1>Scan</h1>
+                                        <form class="form-horizontal" role="form" method="post" action="webServerScanner.php">
                                             <div class="col-lg-6">
                                                 <div class="input-group">
-                                                    <input type="text" name="sslChecker" class="form-control"
-                                                           placeholder="example.com">
-                                                    <span class="input-group-btn">
-                                                        <button class="btn btn-success" type="submit">Scan</button>
-                                                        <button class="btn btn-danger" type="reset">Reset</button>
-                                                    </span>
+                                                    <input type="text" name="nikto_scan" class="form-control"
+                                                           placeholder="http://">
+                        <span class="input-group-btn">
+                                            <button class="btn btn-success" type="submit">Scan</button>
+                                            <button class="btn btn-danger" type="reset">Reset</button>
+                                          </span>
                                                 </div>
-                                                <?php
+                                            <?php
                                                 if (isset($error)) {
                                                     echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                                                           <strong>ERROR:</strong> Please enter a valid domain name.</div>";
+                  <strong>ERROR:</strong> Please enter a valid IP Address or URL. Have you forgotten to add http:// or https:// ? </div>";
                                                 } else if (isset($success)) {
                                                     echo "<div class=\"alert alert-success\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                                                           <strong>Success:</strong> Scan was successful, See My Scans for progress of your scans</div>";
+                  <strong>Success:</strong> Scan was successful, See My Scans for the progress of your scans</div>";
                                                 }
-                                                ?>
-                                                <h4> Scan type: </h4>
-                                                <label class="checkbox-inline">
-                                                    <input name="test_all_vulnerabilities" type="checkbox" value="-U "> Test All Vulnerabilities</label>
-                                                <label class="checkbox-inline">
-                                                    <input name="heartbleed" type="checkbox" value="--heartbleed "> Heartbleed</label>
-                                                <label class="checkbox-inline">
-                                                    <input name="poodle" type="checkbox" value="--poodle "> Poodle</label>
-
-                                                <?php if(isset($scanTypeError)) {
-                                                    echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR: </strong>" . $scanTypeError. "</div>";
-                                                } else if (isset($multiScanTypeError)) {
-                                                    echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR: </strong>" . $multiScanTypeError. "</div>";
-                                                }
-
-                                                ?>
+                                           ?>
                                             </div>
                                             <!-- /.col-lg-6 -->
                                         </form>
                                     </div>
-                                    <br><br><br><br><br><br>
-                                    <p>Heardbleed -
-                                        https://cve.mitre.org/cgi-bin/cvename.cgi?name=cve-2014-0160
-                                        The (1) TLS and (2) DTLS implementations in OpenSSL 1.0.1 before 1.0.1g do not properly handle Heartbeat Extension packets, which allows remote attackers to obtain sensitive information from process memory via crafted packets that trigger a buffer over-read, as demonstrated by reading private keys, related to d1_both.c and t1_lib.c, aka the Heartbleed bug.</p>
                                 </div>
-                                <!-- Page Content -->
+                                <br>
+                                <h4>About this tool:</h4>
+                                <p>Nikto is an Open Source (GPL) web server scanner which performs comprehensive tests against web servers for multiple items, including over 6700 potentially dangerous files/programs, checks for outdated versions of over 1250 servers, and version specific problems on over 270 servers. It also checks for server configuration items such as the presence of multiple index files, HTTP server options, and will attempt to identify installed web servers and software. Scan items and plugins are frequently updated and can be automatically updated.
+
+                                    Nikto is not designed as a stealthy tool. It will test a web server in the quickest time possible, and is obvious in log files or to an IPS/IDS. Find out more here: <a href="https://cirt.net/Nikto2">https://cirt.net/Nikto2</a> </p>
+                                <h4>How it works:</h4>
+                                <p>Nikto will be scanning the target URL in the backend. All URLs must begin with <b>http:// or https://</b></p>
+                                <p>Nikto is capable of the followings but not limited too:</p>
+                                <ul class="dl-horizontal">
+                                    <li>Finding out the web server and its version</li>
+                                    <li>Web server configuration issues</li>
+                                    <li>Check for existing vulnerabilities</li>
+                                    <li>Identifying out of date applications running on a web server</li>
+                                    <li>Provides SSL/TLS information</li>
+                                </ul>
                             </div>
                         </div>
                         <!-- /#page-content-wrapper -->

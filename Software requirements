@@ -1,0 +1,32 @@
+DNSSCAN - git clone  https://github.com/rbsec/dnscan.git  && requires python-dnspython => apt-get install python-dnspython
+
+Nginx - provide configuration
+
+MYSQL - provide the database schema
+
+RabbitMQ-server - apt-get install rabbitmq-server
+
+Nmap - apt-get install nmap
+
+Nikto - git clone https://github.com/rbsec/dnscan.git               https://github.com/sullo/nikto   => you may require to install perl
+
+TestSSL - git clone https://github.com/drwetter/testssl.sh.git
+
+ln -s /var/www/html/vendor/dnscan/dnscan.py /usr/bin/dnscan
+
+
+
+CREATE TABLE `PenGui`.`dnsScan` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(45) NULL DEFAULT NULL COLLATE = utf8mb4_unicode_ci ;,
+  `user_input_command` VARCHAR(45) NULL DEFAULT NULL COLLATE = utf8mb4_unicode_ci ;,
+  `dns_log_returned` LONGTEXT NULL DEFAULT NULL COLLATE = utf8mb4_unicode_ci ;,
+  `dns_log_simplified` LONGTEXT NULL DEFAULT NULL COLLATE = utf8mb4_unicode_ci ;,
+  `ip_address` VARCHAR(12) NULL DEFAULT NULL COLLATE = utf8mb4_unicode_ci ;,
+  `task_status` VARCHAR(10) NULL DEFAULT NULL COLLATE = utf8mb4_unicode_ci ;,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`))
+DEFAULT CHARACTER SET = utf8mb4;
+
+ALTER TABLE `PenGui`.`dnsScan`
+COLLATE = utf8mb4_unicode_ci ;

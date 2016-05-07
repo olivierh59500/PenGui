@@ -1,88 +1,60 @@
 <?php
-require('sessionManagement.php');
+/**
+ * Created by PhpStorm.
+ * User: root
+ * Date: 06/05/16
+ * Time: 22:32
+ */
+
+error_reporting(-1); ini_set('display_errors', 1);
 require('utility.php');
 require('new_task.php');
+require('sessionManagement.php');
+
 if(!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
-$target = isset($_POST['sslChecker']) ? $_POST['sslChecker'] : null;
-$userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
-$sessionUser = isset($_SESSION['loginUser']) ? $_SESSION['loginUser'] : null ;
+$dnsScan = isset($_POST['dns_scan']) ? $_POST['dns_scan'] : null;
+$userIpAddress = $_SERVER["REMOTE_ADDR"];
+$sessionUser = $_SESSION['loginUser'];
 $taskStatus = "processing";
-$testSSL = "testssl ";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    if (!isset($_POST['test_all_vulnerabilities']) & !isset($_POST['poodle']) & !isset($_POST['heartbleed'])) {
-        $scanTypeError = "Please select at least one scan type.";
-    } else if (isset($_POST['test_all_vulnerabilities'])) {
-        $testAllVulnerabilities = $_POST['test_all_vulnerabilities'];
-    } else if (isset($_POST['poodle'])) {
-        $poodle = $_POST['poodle'];
-    } else if (isset($_POST['heartbleed'])) {
-        $heartbleed = $_POST['heartbleed'];
-    }
-
-    if (!filter_var("http://www." . $target, FILTER_VALIDATE_URL)) {
+    if (empty($dnsScan)) {
         $error = true;
-    }  else if (isset($testAllVulnerabilities)) {
-        $sslCheckerAllVuln = $testSSL . $testAllVulnerabilities . $target;
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $sessionUser, $sslCheckerAllVuln, $userIpAddress, $taskStatus);
-        $stmt->execute();
-        $success = true;
-        $target = null;
-        $startTask = new Task();
-        $startTask->newTask($sslCheckerAllVuln);
-    } else if (isset($poodle)) {
-        $sslCheckerPoodle = $testSSL . $poodle . $target;
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $sessionUser, $sslCheckerPoodle, $userIpAddress, $taskStatus);
-        $stmt->execute();
-        $success = true;
-        $target = null;
-        $stmt->close();
-        $startTask = new Task();
-        $startTask->newTask($sslCheckerPoodle);
-
-    } else if (isset($heartbleed)) {
-        $sslCheckerHeartbleed = $testSSL . $heartbleed . $target;
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $sessionUser, $sslCheckerHeartbleed, $userIpAddress, $taskStatus);
-        $stmt->execute();
-        $success = true;
-        $target = null;
-        $stmt->close();
-        $startTask = new Task();
-        $startTask->newTask($sslCheckerHeartbleed);
+    }
+    //strip the [http://www.] get the domain name and then add the http or https to the link to get validated
+    //only works for domain name
+    if(!filter_var("http://www." . $dnsScan, FILTER_VALIDATE_URL) && !filter_var($dnsScan, FILTER_VALIDATE_IP)) {
+        $error = true;
     } else {
-        $error = true;
+        $dnsScanTarget = "dnscan --domain " .$dnsScan; //need to remove the www. from the string so need to use explode string function
+        $stmt = Utility::databaseConnection()->prepare("INSERT INTO dnsScan (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss",$sessionUser, $dnsScanTarget, $userIpAddress, $taskStatus);
+        $stmt->execute();
+        $success = true;
+        //call the Task newTask function to queue the job
+        //exec(escapeshellcmd("php backgroundTask.php >/dev/null 2>/dev/null &"));
+        $startTask = new Task();
+        $startTask->newTask($dnsScanTarget);
     }
-}//end of post request
-
-function cveLinker($data) {
-        $url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
-        $data = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $data);
-    
-        $url = '/(CVE)(=?.*[0-9])/';
-        $data = preg_replace($url, '<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=$0" target="_blank" title="$0">$0</a>', $data);
-        return $data;
 }
 
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <meta name="author" content="Mojtaba Amiri">
+    <meta name="author" content="">
 
-    <title>PenGui SSL Checker</title>
+    <title>PenGui DNS Scan</title>
+
     <!-- Bootstrap Core CSS -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
@@ -140,13 +112,13 @@ function cveLinker($data) {
                     <li>
                         <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
                     </li>
-                    <li class="active">
+                    <li>
                         <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                     </li>
                     <li>
                         <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                     </li>
                     <li>
@@ -174,62 +146,50 @@ function cveLinker($data) {
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            SSL
-                            <small>Check your SSL </small>
+                            DNS SCAN
+                            <small>DNS Subdomain Scanner</small>
                         </h1>
                         <!-- Page Content -->
                         <div id="page-content-wrapper">
                             <div class="container-fluid">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <h1>SSL Scan</h1>
-
-                                        <form class="form-horizontal" role="form" method="post" action="sslchecker.php">
+                                        <h1>Scan</h1>
+                                        <form class="form-horizontal" role="form" method="post" action="dnsScan.php">
                                             <div class="col-lg-6">
                                                 <div class="input-group">
-                                                    <input type="text" name="sslChecker" class="form-control"
+                                                    <input type="text" name="dns_scan" class="form-control"
                                                            placeholder="example.com">
-                                                    <span class="input-group-btn">
-                                                        <button class="btn btn-success" type="submit">Scan</button>
-                                                        <button class="btn btn-danger" type="reset">Reset</button>
-                                                    </span>
+                        <span class="input-group-btn">
+                                            <button class="btn btn-success" type="submit">Scan</button>
+                                            <button class="btn btn-danger" type="reset">Reset</button>
+                                          </span>
                                                 </div>
                                                 <?php
                                                 if (isset($error)) {
                                                     echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                                                           <strong>ERROR:</strong> Please enter a valid domain name.</div>";
+                  <strong>ERROR:</strong> Please enter a valid Domain name.</div>";
                                                 } else if (isset($success)) {
                                                     echo "<div class=\"alert alert-success\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                                                           <strong>Success:</strong> Scan was successful, See My Scans for progress of your scans</div>";
+                  <strong>Success:</strong> Scan was successful, See My Scans for the progress of your scans</div>";
                                                 }
-                                                ?>
-                                                <h4> Scan type: </h4>
-                                                <label class="checkbox-inline">
-                                                    <input name="test_all_vulnerabilities" type="checkbox" value="-U "> Test All Vulnerabilities</label>
-                                                <label class="checkbox-inline">
-                                                    <input name="heartbleed" type="checkbox" value="--heartbleed "> Heartbleed</label>
-                                                <label class="checkbox-inline">
-                                                    <input name="poodle" type="checkbox" value="--poodle "> Poodle</label>
-
-                                                <?php if(isset($scanTypeError)) {
-                                                    echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR: </strong>" . $scanTypeError. "</div>";
-                                                } else if (isset($multiScanTypeError)) {
-                                                    echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR: </strong>" . $multiScanTypeError. "</div>";
-                                                }
-
                                                 ?>
                                             </div>
                                             <!-- /.col-lg-6 -->
                                         </form>
                                     </div>
-                                    <br><br><br><br><br><br>
-                                    <p>Heardbleed -
-                                        https://cve.mitre.org/cgi-bin/cvename.cgi?name=cve-2014-0160
-                                        The (1) TLS and (2) DTLS implementations in OpenSSL 1.0.1 before 1.0.1g do not properly handle Heartbeat Extension packets, which allows remote attackers to obtain sensitive information from process memory via crafted packets that trigger a buffer over-read, as demonstrated by reading private keys, related to d1_both.c and t1_lib.c, aka the Heartbleed bug.</p>
                                 </div>
-                                <!-- Page Content -->
+                                <br>
+                                <h4>About this tool:</h4>
+                                <p>DNS Scan is a tool based in python using the top most common subdomain names. DNS Scan uses wordlist of subdomains to perform its scans. </p>
+                                <br>
+                                <h4>How it works:</h4>
+                                <p>DNS Scan will first try to perform a DNS zone transfer and if the zone transfer failed it will lookup the TXT and MX records for the target domain and                                       performs a recursive subdomain scanning.</p>
+                                <p>A zone transfer that from an external IP address is used as part of an attackers reconnaissance phase. Usually a zone transfer is a normal operation                                          between primary and secondary DNS servers in order to synchronise the records for a domain. This is typically not something you want to be externally                                        accessible. If an attacker can gather all your DNS records, they can use those to select targets for exploitation.</p>
+                                <p>To find out more go here:
+                                    <a href="https://hackertarget.com/zone-transfer/" target="_blank">https://hackertarget.com/zone-transfer/</a> or
+                                    <a href="https://digi.ninja/projects/zonetransferme.php" target="_blank">https://digi.ninja/projects/zonetransferme.php</a> or
+                                    <a href="https://technet.microsoft.com/en-us/library/cc781340(v=ws.10).aspx" target="_blank">https://technet.microsoft.com/en-us/library/cc781340(v=ws.10).aspx</a></p>
                             </div>
                         </div>
                         <!-- /#page-content-wrapper -->

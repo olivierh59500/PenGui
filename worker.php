@@ -18,17 +18,25 @@ $channel->queue_declare('task_queue', false, true, false, false);
 
 echo ' [*] Waiting for messages. To exit press CTRL+C', "\n";
 
-$callback = function($msg) {
+$callback = function ($msg) {
+//    $userSuppliedCommand = $msg->body; //use this instead of $msg->body for better code read
     echo " [x] Received ", $msg->body, "\n"; //$msg->body: converts message object to a string
-    if(strpos($msg->body, "nmap") !== false) {
+
+    if (strpos($msg->body, "nmap") !== false) {
         $nmapResult = shell_exec(escapeshellcmd($msg->body));
         storeNmapResult($msg->body, $nmapResult);
-    } else if (strpos($msg->body, "whois") !== false){
+    } else if (strpos($msg->body, "whois") !== false) {
         $whoisResult = shell_exec(escapeshellcmd($msg->body));
         storeWhoisResult($msg->body, $whoisResult);
     } else if (strpos($msg->body, "testssl") !== false) {
-        $testSSResult = shell_exec($msg->body);
-        storeTestSSLResult($msg->body, $testSSResult);
+        $testSSLResult = shell_exec(escapeshellcmd($msg->body));
+        storeTestSSLResult($msg->body, $testSSLResult);
+    } else if (strpos($msg->body, "perl /var/www/html/vendor/nikto/program/nikto.pl -C all -no404 -maxtime 500 -host ") !== false) {
+        $niktoResult = shell_exec(escapeshellcmd($msg->body));
+        storeNiktoresult($msg->body, $niktoResult);
+    } else if(strpos($msg->body, "dnscan --domain") !== false) {
+        $dnscanResult = shell_exec((escapeshellcmd($msg->body)));
+        storeDnsScanResult($msg->body, $dnscanResult);
     }
 
     echo " [x] Done", "\n";
@@ -41,17 +49,45 @@ $channel->basic_consume('task_queue', '', false, false, false, false, $callback)
 while(count($channel->callbacks)) {
     $channel->wait(); //wait for incoming messages/tasks
 }
-
 $channel->close();
 $connection->close();
 
-function storeTestSSLResult($testSSLType, $testSSLResult) {
+function storeDnsScanResult($dnsScanType, $dnsScanResult) {
+    $taskStatus = "completed";
+    $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM dnsScan WHERE dns_log_returned is null");
+    $stmt->execute();
+    $stmt->bind_result($dbId, $dbDnsScanCommand);
+    while ($stmt->fetch()) {
+        if ($dbDnsScanCommand === $dnsScanType) {
+            $stmt = Utility::databaseConnection()->prepare("UPDATE dnsScan SET dns_log_returned = ?, task_status = ? WHERE id = ?");
+            $stmt->bind_param("ssi", $dnsScanResult, $taskStatus, $dbId);
+            $stmt->execute();
+        }
+    }
+}
+
+function storeNiktoresult($niktoScanType, $niktoResult)
+{
+    $taskStatus = "completed";
+    $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM nikto WHERE nikto_log_returned is null");
+    $stmt->execute();
+    $stmt->bind_result($dbId, $dbNiktoCommand);
+    while ($stmt->fetch()) {
+        if ($dbNiktoCommand === $niktoScanType) {
+            $stmt = Utility::databaseConnection()->prepare("UPDATE nikto SET nikto_log_returned = ?, task_status = ? WHERE id = ?");
+            $stmt->bind_param("ssi", $niktoResult, $taskStatus, $dbId);
+            $stmt->execute();
+        }
+    }
+}
+
+function storeTestSSLResult($testSSLScanType, $testSSLResult) {
     $taskStatus = "completed";
     $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM sslChecker WHERE sslChecker_log_returned is null");
     $stmt->execute();
-    $stmt->bind_result($dbId, $dbtestSSLCommand);
+    $stmt->bind_result($dbId, $dbTestSSLCommand);
     while ($stmt->fetch()) {
-        if ($dbtestSSLCommand === $testSSLType) {
+        if ($dbTestSSLCommand === $testSSLScanType) {
             $stmt = Utility::databaseConnection()->prepare("UPDATE sslChecker SET sslChecker_log_returned = ?, task_status = ? WHERE id = ?");
             $stmt->bind_param("ssi", $testSSLResult, $taskStatus, $dbId);
             $stmt->execute();

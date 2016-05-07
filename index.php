@@ -82,7 +82,10 @@ if(!isset($_SESSION['loginUser'])) {
                     <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                 </li>
                 <li>
-                    <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
+                    <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
+                </li>
+                <li>
+                    <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                 </li>
                 <li>
                     <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i

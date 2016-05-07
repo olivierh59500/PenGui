@@ -16,7 +16,7 @@ function linkParse($data){
     $url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
     $data = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $data);
 
-    $url = '/(CVE)(=?.*[0-9])/';
+    $url = '/(CVE)(.*[0-9])/';
     $data = preg_replace($url, '<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=$0" target="_blank" title="$0">$0</a>', $data);
     return $data;
 }
@@ -97,7 +97,10 @@ function linkParse($data){
                         <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                     </li>
                     <li>
-                        <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
+                        <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
+                    </li>
+                    <li>
+                        <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                     </li>
                     <li>
                         <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i
@@ -147,8 +150,12 @@ UNION
 SELECT user_input_command, task_status, create_time FROM whois WHERE task_status = 'processing' AND username = ?
 UNION 
 SELECT user_input_command, task_status, create_time FROM sslChecker WHERE task_status = 'processing' AND username = ?
+UNION 
+SELECT user_input_command, task_status, create_time FROM nikto WHERE task_status = 'processing' AND username = ?
+UNION 
+SELECT user_input_command, task_status, create_time FROM dnsScan WHERE task_status = 'processing' AND username = ?
 ORDER BY create_time DESC;");
-                                            $stmt->bind_param("sss", $currentUser, $currentUser, $currentUser);
+                                            $stmt->bind_param("sssss", $currentUser, $currentUser, $currentUser, $currentUser, $currentUser);
                                             $stmt->execute();
                                             $stmt->bind_result($dbCommand, $dbTaskStatus, $dbCreateTime);
                                             while($stmt->fetch()) {
@@ -174,13 +181,17 @@ ORDER BY create_time DESC;");
                                             <?php //Task Completed
                                             $currentUser = $_SESSION['loginUser'];
                                             $stmt = Utility::databaseConnection()->prepare("
-SELECT user_input_command, nmap_log_simplified, task_status, create_time FROM nmap WHERE username=? AND task_status='completed'
+SELECT user_input_command, nmap_log_simplified, task_status, create_time FROM nmap WHERE username= ? AND task_status='completed'
 UNION
-SELECT user_input_command, whois_log_returned, task_status, create_time FROM whois WHERE username=? AND task_status='completed'
+SELECT user_input_command, whois_log_returned, task_status, create_time FROM whois WHERE username= ? AND task_status='completed'
 UNION
 SELECT user_input_command, sslChecker_log_simplified, task_status, create_time from sslChecker where username= ? and task_status='completed'
+UNION
+SELECT user_input_command, nikto_log_returned, task_status, create_time FROM nikto WHERE username = ? AND task_status = 'completed'
+UNION
+SELECT user_input_command, dns_log_returned, task_status, create_time FROM dnsScan WHERE username = ? AND task_status = 'completed'
 ORDER BY create_time DESC");
-                                            $stmt->bind_param("sss", $currentUser, $currentUser, $currentUser);
+                                            $stmt->bind_param("sssss", $currentUser, $currentUser, $currentUser, $currentUser, $currentUser);
                                             $stmt->execute();
                                             $stmt->store_result();
                                             $stmt->bind_result($dbCommand, $dbLogReturned, $dbTaskStatus, $dbCreateTime);
