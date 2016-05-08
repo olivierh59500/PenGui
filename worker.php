@@ -5,14 +5,12 @@
  * Date: 23/04/16
  * Time: 20:34
  */
-
-//require('sessionManagement.php');
 require('utility.php');
 
 require_once __DIR__ . '/vendor/autoload.php';
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
-$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+$connection = new AMQPStreamConnection('localhost', 5672, 'pengui', 'j2FreVA+');
 $channel = $connection->channel();
 $channel->queue_declare('task_queue', false, true, false, false);
 
@@ -22,7 +20,15 @@ $callback = function ($msg) {
 //    $userSuppliedCommand = $msg->body; //use this instead of $msg->body for better code read
     echo " [x] Received ", $msg->body, "\n"; //$msg->body: converts message object to a string
 
-    if (strpos($msg->body, "nmap") !== false) {
+    if (strpos($msg->body, "nmap -sS") !== false) {
+        $sudoRequired = "sudo " . $msg->body;
+        $nmapResult = shell_exec(escapeshellcmd($sudoRequired));
+        storeNmapResult($msg->body, $nmapResult);
+    } else if (strpos($msg->body, "nmap -sn") !== false) {
+        $sudoRequired = "sudo " . $msg->body;
+        $nmapResult = shell_exec(escapeshellcmd($sudoRequired));
+        storeNmapResult($msg->body, $nmapResult);
+    } else if (strpos($msg->body, "nmap") !== false) {
         $nmapResult = shell_exec(escapeshellcmd($msg->body));
         storeNmapResult($msg->body, $nmapResult);
     } else if (strpos($msg->body, "whois") !== false) {
@@ -34,7 +40,7 @@ $callback = function ($msg) {
     } else if (strpos($msg->body, "perl /var/www/html/vendor/nikto/program/nikto.pl -C all -no404 -maxtime 500 -host ") !== false) {
         $niktoResult = shell_exec(escapeshellcmd($msg->body));
         storeNiktoresult($msg->body, $niktoResult);
-    } else if(strpos($msg->body, "dnscan --domain") !== false) {
+    } else if (strpos($msg->body, "dnscan --domain") !== false) {
         $dnscanResult = shell_exec((escapeshellcmd($msg->body)));
         storeDnsScanResult($msg->body, $dnscanResult);
     }
@@ -43,16 +49,17 @@ $callback = function ($msg) {
     $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 };
 //1 = prefetch count
-$channel->basic_qos(null, 1, null);
+$channel->basic_qos(null, 10, null);
 $channel->basic_consume('task_queue', '', false, false, false, false, $callback);
 
-while(count($channel->callbacks)) {
+while (count($channel->callbacks)) {
     $channel->wait(); //wait for incoming messages/tasks
 }
 $channel->close();
 $connection->close();
 
-function storeDnsScanResult($dnsScanType, $dnsScanResult) {
+function storeDnsScanResult($dnsScanType, $dnsScanResult)
+{
     $taskStatus = "completed";
     $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM dnsScan WHERE dns_log_returned is null");
     $stmt->execute();
@@ -81,7 +88,8 @@ function storeNiktoresult($niktoScanType, $niktoResult)
     }
 }
 
-function storeTestSSLResult($testSSLScanType, $testSSLResult) {
+function storeTestSSLResult($testSSLScanType, $testSSLResult)
+{
     $taskStatus = "completed";
     $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM sslChecker WHERE sslChecker_log_returned is null");
     $stmt->execute();
@@ -92,7 +100,7 @@ function storeTestSSLResult($testSSLScanType, $testSSLResult) {
             $stmt->bind_param("ssi", $testSSLResult, $taskStatus, $dbId);
             $stmt->execute();
             //function here
-            if(strpos($testSSLResult, "Testing vulnerabilities")) {
+            if (strpos($testSSLResult, "Testing vulnerabilities")) {
                 fullSSLLog($testSSLResult, $dbId);
             } else {
                 simplifySSLResult($testSSLResult, $dbId);
@@ -102,18 +110,20 @@ function storeTestSSLResult($testSSLScanType, $testSSLResult) {
     $stmt->close();
 }
 
-function fullSSLLog($sslResult, $id) {
-    $removeSymbols =  preg_replace("#\e.*?m#", "", $sslResult);
-    $split = preg_split("#(Testing vulnerabilities)#",$removeSymbols);
+function fullSSLLog($sslResult, $id)
+{
+    $removeSymbols = preg_replace("#\e.*?m#", "", $sslResult);
+    $split = preg_split("#(Testing vulnerabilities)#", $removeSymbols);
     $stmt = Utility::databaseConnection()->prepare("UPDATE sslChecker SET sslChecker_log_simplified = ? WHERE id = ?");
     $stmt->bind_param("si", $split[1], $id);
     $stmt->execute();
     $stmt->close();
 }
 
-function simplifySSLResult($testSSLResult, $id) {
+function simplifySSLResult($testSSLResult, $id)
+{
     $testSSLResult = preg_grep("/(not vulnerable|VULNERABLE)/", explode("\n", $testSSLResult));
-    foreach($testSSLResult as $value){
+    foreach ($testSSLResult as $value) {
         $testSSLResultSimplified = preg_replace("#\e.*?m#", "", $value);
         $sslResult = preg_split("/\(timed out\)/", $testSSLResultSimplified);
     }
@@ -123,7 +133,8 @@ function simplifySSLResult($testSSLResult, $id) {
     $stmt->close();
 }
 
-function storeNmapResult($nmapScanType, $nmapResult) {
+function storeNmapResult($nmapScanType, $nmapResult)
+{
     $taskStatus = "completed";
     $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM nmap WHERE nmap_log_returned is null");
     $stmt->execute();
@@ -133,35 +144,50 @@ function storeNmapResult($nmapScanType, $nmapResult) {
             $stmt = Utility::databaseConnection()->prepare("UPDATE nmap SET nmap_log_returned = ?, task_status = ? WHERE id = ?");
             $stmt->bind_param("ssi", $nmapResult, $taskStatus, $dbId);
             $stmt->execute();
-            nmapLogSimplified($nmapResult, $dbId);
+            if (strpos($nmapScanType, "nmap -sn") !== false) {
+                nmapSweepLog($nmapResult, $dbId);
+            } else {
+                nmapLogSimplified($nmapResult, $dbId);
+            }
         }
     }
     $stmt->close();
 }
 
-function nmapLogSimplified($nmapResult, $id) {
-    $simplifyLog =  preg_split("#(ports)#", $nmapResult);
+function nmapSweepLog($nmapResult, $id)
+{
+    $removeNmapHeader = explode("BST", $nmapResult);
+    $stmt = Utility::databaseConnection()->prepare("UPDATE nmap SET nmap_log_simplified = ? WHERE id = ?");
+    $stmt->bind_param("si", $removeNmapHeader[1], $id);
+    $stmt->execute();
+
+}
+
+function nmapLogSimplified($nmapResult, $id)
+{
+    $simplifyLog = preg_split("#(filtered ports|closed ports)#", $nmapResult);
     $resultingLog = preg_split("#(Nmap done)#", $simplifyLog[1]);
-//    echo $secondSplit[0];
     $stmt = Utility::databaseConnection()->prepare("UPDATE nmap SET nmap_log_simplified = ? WHERE id = ?");
     $stmt->bind_param("si", $resultingLog[0], $id);
     $stmt->execute();
 }
 
-function storeWhoisResult($whoisScanCommand, $whoisResult) {
+function storeWhoisResult($whoisScanCommand, $whoisResult)
+{
     $taskStatus = "completed";
     $stmt = Utility::databaseConnection()->prepare("SELECT id, user_input_command FROM whois WHERE whois_log_returned is null");
     $stmt->execute();
     $stmt->bind_result($dbId, $dbWhoisCommand);
     while ($stmt->fetch()) {
         if ($dbWhoisCommand === $whoisScanCommand)
-        $stmt = Utility::databaseConnection()->prepare("UPDATE whois SET whois_log_returned = ?, task_status = ? WHERE id = ?");
+            $stmt = Utility::databaseConnection()->prepare("UPDATE whois SET whois_log_returned = ?, task_status = ? WHERE id = ?");
         $stmt->bind_param("ssi", $whoisResult, $taskStatus, $dbId);
         $stmt->execute();
     }
     $stmt->close();
 }
 
-function simplifyNmapLog() {
+function simplifyNmapLog()
+{
 
 }

@@ -1,6 +1,5 @@
 <?php
 //error_reporting(-1); ini_set('display_errors', 1);
-//require('loginAuthentication.php');
 require('utility.php');
 require('sessionManagement.php');
 require('new_task.php');
@@ -10,7 +9,7 @@ if(!isset($_SESSION['loginUser'])) {
 }
 
 $niktoScanTarget = isset($_POST['nikto_scan']) ? $_POST['nikto_scan'] : null;
-$userIpAddress = $_SERVER["REMOTE_ADDR"];
+$userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
 $sessionUser = $_SESSION['loginUser'];
 $taskStatus = "processing";
 
@@ -97,16 +96,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
                     </li>
                     <li>
-                        <a href="nmap.php"> Nmap</a>
-                    </li>
-                    <li>
-                        <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#nmapScanType"><i
+                                class="fa fa-fw fa-arrows-v"></i> Nmap <i
+                                class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="nmapScanType" class="collapse">
+                            <li class="active">
+                                <a href="tcpScan.php">TCP Scan</a>
+                            </li>
+                            <li>
+                                <a href="sweepScan.php">Ping Sweep Scan</a>
+                            </li>
+                        </ul>
                     </li>
                     <li>
                         <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
-                    </li>
-                    <li>
-                        <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                     </li>
                     <li class="active">
                         <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
@@ -115,19 +118,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                     </li>
                     <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i
-                                class="fa fa-fw fa-arrows-v"></i> Dropdown <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="demo" class="collapse">
+                        <a href="javascript:;" data-toggle="collapse" data-target="#sslChecker"><i
+                                class="fa fa-fw fa-arrows-v"></i> SSL/TLS Checker <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="sslChecker" class="collapse">
                             <li>
-                                <a href="#">Dropdown Item</a>
+                                <a href="heartbleed.php">Heartbleed Scan</a>
                             </li>
                             <li>
-                                <a href="#">Dropdown Item</a>
+                                <a href="poodle.php">Poodle Scan</a>
+                            </li>
+                            <li>
+                                <a href="sslFullScan.php"><i class="fa fa-fw fa-desktop"></i> Full SSL/TLS Scan</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> RTL Dashboard</a>
+                        <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My  Scans</a>
                     </li>
                 </ul>
             </div>
@@ -162,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             <?php
                                                 if (isset($error)) {
                                                     echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR:</strong> Please enter a valid IP Address or URL. Have you forgotten to add http:// or https:// ? </div>";
+                  <strong>ERROR:</strong> Please enter a valid IP Address or URL. Have you forgotten to add http:// or https://</div>";
                                                 } else if (isset($success)) {
                                                     echo "<div class=\"alert alert-success\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
                   <strong>Success:</strong> Scan was successful, See My Scans for the progress of your scans</div>";

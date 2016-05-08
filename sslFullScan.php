@@ -1,60 +1,50 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: root
- * Date: 06/05/16
- * Time: 22:32
- */
-
-error_reporting(-1); ini_set('display_errors', 1);
+require('sessionManagement.php');
 require('utility.php');
 require('new_task.php');
-require('sessionManagement.php');
-
 if(!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
-$dnsScan = isset($_POST['dns_scan']) ? $_POST['dns_scan'] : null;
+$target = isset($_POST['sslChecker']) ? $_POST['sslChecker'] : null;
 $userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
 $sessionUser = $_SESSION['loginUser'];
 $taskStatus = "processing";
+$testSSL = "testssl --vulnerable ";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (empty($dnsScan)) {
+
+    if (empty($target)) {
         $error = true;
-    }
-    //strip the [http://www.] get the domain name and then add the http or https to the link to get validated
-    //only works for domain name
-    if(!filter_var("http://www." . $dnsScan, FILTER_VALIDATE_URL) && !filter_var($dnsScan, FILTER_VALIDATE_IP)) {
+    } else if (!filter_var("http://www." . $target, FILTER_VALIDATE_URL)) {
         $error = true;
-    } else {
-        $dnsScanTarget = "dnscan --domain " .$dnsScan; //need to remove the www. from the string so need to use explode string function
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO dnsScan (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss",$sessionUser, $dnsScanTarget, $userIpAddress, $taskStatus);
+    } else if (isset($target)) {
+        $sslCheckerAllVuln = $testSSL . $target;
+        $stmt = Utility::databaseConnection()->prepare("INSERT INTO sslChecker (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $sessionUser, $sslCheckerAllVuln, $userIpAddress, $taskStatus);
         $stmt->execute();
         $success = true;
-        //call the Task newTask function to queue the job
-        //exec(escapeshellcmd("php backgroundTask.php >/dev/null 2>/dev/null &"));
+        $target = null;
         $startTask = new Task();
-        $startTask->newTask($dnsScanTarget);
+        $startTask->newTask($sslCheckerAllVuln);
+    } else {
+        $error = true;
     }
-}
+}//end of post request
 
 ?>
 
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Mojtaba Amiri">
 
-    <title>PenGui DNS Scan</title>
-
+    <title>PenGui SSL Checker</title>
     <!-- Bootstrap Core CSS -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
@@ -122,12 +112,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <li>
                         <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
                     </li>
-                    <li class="active">
+                    <li>
                         <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="javascript:;" data-toggle="collapse" data-target="#sslChecker"><i
-                                class="fa fa-fw fa-arrows-v"></i> SSL/TLS Checker <i class="fa fa-fw fa-caret-down"></i></a>
+                                class="fa fa-fw fa-arrows-v"></i> SSL/TLS Scan <i class="fa fa-fw fa-caret-down"></i></a>
                         <ul id="sslChecker" class="collapse">
                             <li>
                                 <a href="heartbleed.php">Heartbleed Scan</a>
@@ -135,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <li>
                                 <a href="poodle.php">Poodle Scan</a>
                             </li>
-                            <li>
+                            <li class="active">
                                 <a href="sslFullScan.php"><i class="fa fa-fw fa-desktop"></i> Full SSL/TLS Scan</a>
                             </li>
                         </ul>
@@ -153,32 +143,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            DNS SCAN
-                            <small>DNS Subdomain Scanner</small>
+                            SSL
+                            <small>Check your SSL </small>
                         </h1>
                         <!-- Page Content -->
                         <div id="page-content-wrapper">
                             <div class="container-fluid">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <h1>Scan</h1>
-                                        <form class="form-horizontal" role="form" method="post" action="dnsScan.php">
+                                        <h1>Full SSL/TLS Scan</h1>
+
+                                        <form class="form-horizontal" role="form" method="post" action="sslFullScan.php">
                                             <div class="col-lg-6">
                                                 <div class="input-group">
-                                                    <input type="text" name="dns_scan" class="form-control"
+                                                    <input type="text" name="sslChecker" class="form-control"
                                                            placeholder="example.com">
-                        <span class="input-group-btn">
-                                            <button class="btn btn-success" type="submit">Scan</button>
-                                            <button class="btn btn-danger" type="reset">Reset</button>
-                                          </span>
+                                                    <span class="input-group-btn">
+                                                        <button class="btn btn-success" type="submit">Scan</button>
+                                                        <button class="btn btn-danger" type="reset">Reset</button>
+                                                    </span>
                                                 </div>
                                                 <?php
                                                 if (isset($error)) {
                                                     echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR:</strong> Please enter a valid Domain name.</div>";
+                                                           <strong>ERROR:</strong> Please enter a valid domain name.</div>";
                                                 } else if (isset($success)) {
                                                     echo "<div class=\"alert alert-success\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>Success:</strong> Scan was successful, See My Scans for the progress of your scans</div>";
+                                                           <strong>Success:</strong> Scan was successful, See My Scans for progress of your scans</div>";
                                                 }
                                                 ?>
                                             </div>
@@ -186,17 +177,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         </form>
                                     </div>
                                 </div>
+                                <!-- Page Content -->
                                 <br>
-                                <h4>About this tool:</h4>
-                                <p>DNS Scan is a tool based in python using the top most common subdomain names. DNS Scan uses wordlist of subdomains to perform its scans. </p>
-                                <br>
+                                <h4>About this tool: </h4>
+                                <p><b>testssl.sh</b> is an open source and command line tool that checks your server
+                                    for the supported TLS/SSL ciphers and report any flaws found.</p>
                                 <h4>How it works:</h4>
-                                <p>DNS Scan will first try to perform a DNS zone transfer and if the zone transfer failed it will lookup the TXT and MX records for the target domain and                                       performs a recursive subdomain scanning.</p>
-                                <p>A zone transfer that from an external IP address is used as part of an attackers reconnaissance phase. Usually a zone transfer is a normal operation                                          between primary and secondary DNS servers in order to synchronise the records for a domain. This is typically not something you want to be externally                                        accessible. If an attacker can gather all your DNS records, they can use those to select targets for exploitation.</p>
-                                <p>To find out more go here:
-                                    <a href="https://hackertarget.com/zone-transfer/" target="_blank">https://hackertarget.com/zone-transfer/</a> or
-                                    <a href="https://digi.ninja/projects/zonetransferme.php" target="_blank">https://digi.ninja/projects/zonetransferme.php</a> or
-                                    <a href="https://technet.microsoft.com/en-us/library/cc781340(v=ws.10).aspx" target="_blank">https://technet.microsoft.com/en-us/library/cc781340(v=ws.10).aspx</a></p>
+                                Testing All Known Vulnerabilities in SSL/TLS:
+                                <ul><li> Heartbleed (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-0160" target="_blank" title="CVE-2014-0160">CVE-2014-0160</a>) </li>
+                                <li>CCS (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-0224" target="_blank" title="CVE-2014-0224">CVE-2014-0224</a>)</li>
+                                <li>Secure Renegotiation (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2009-3555" target="_blank" title="CVE-2009-3555">CVE-2009-3555</a>)</li>
+                                <li>CRIME, TLS (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2012-4929" target="_blank" title="CVE-2012-4929">CVE-2012-4929</a>)</li>
+                                <li>BREACH (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-3587" target="_blank" title="CVE-2013-3587">CVE-2013-3587</a>)</li>
+                                <li>POODLE, SSL (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-3566" target="_blank" title="CVE-2014-3566">CVE-2014-3566</a>)</li>
+                                <li>FREAK (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-0204" target="_blank" title="CVE-2015-0204">CVE-2015-0204</a>)</li>
+                                <li>DROWN (2016-0800, <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-0703" target="_blank" title="CVE-2016-0703">CVE-2016-0703</a>)</li>
+                                <li>LOGJAM (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-4000" target="_blank" title="CVE-2015-4000">CVE-2015-4000</a>)</li>
+                                <li>BEAST (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-3389" target="_blank" title="CVE-2011-3389">CVE-2011-3389</a>)</li>
+                                <li>RC4 (<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-2566" target="_blank" title="CVE-2013-2566">CVE-2013-2566</a>)(<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-2808" target="_blank" title="CVE-2015-2808">CVE-2015-2808</a>)</li> </ul>
                             </div>
                         </div>
                         <!-- /#page-content-wrapper -->

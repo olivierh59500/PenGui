@@ -70,16 +70,20 @@ if(!isset($_SESSION['loginUser'])) {
                     <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
                 </li>
                 <li>
-                    <a href="nmap.php"> Nmap</a>
-                </li>
-                <li>
-                    <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
+                    <a href="javascript:;" data-toggle="collapse" data-target="#nmapScanType"><i
+                            class="fa fa-fw fa-arrows-v"></i> Nmap <i
+                            class="fa fa-fw fa-caret-down"></i></a>
+                    <ul id="nmapScanType" class="collapse">
+                        <li class="active">
+                            <a href="tcpScan.php">TCP Scan</a>
+                        </li>
+                        <li>
+                            <a href="sweepScan.php">Ping Sweep Scan</a>
+                        </li>
+                    </ul>
                 </li>
                 <li>
                     <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
-                </li>
-                <li>
-                    <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                 </li>
                 <li>
                     <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
@@ -88,19 +92,22 @@ if(!isset($_SESSION['loginUser'])) {
                     <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                 </li>
                 <li>
-                    <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i
-                            class="fa fa-fw fa-arrows-v"></i> Dropdown <i class="fa fa-fw fa-caret-down"></i></a>
-                    <ul id="demo" class="collapse">
+                    <a href="javascript:;" data-toggle="collapse" data-target="#sslChecker"><i
+                            class="fa fa-fw fa-arrows-v"></i> SSL/TLS Checker <i class="fa fa-fw fa-caret-down"></i></a>
+                    <ul id="sslChecker" class="collapse">
                         <li>
-                            <a href="#">Dropdown Item</a>
+                            <a href="heartbleed.php">Heartbleed Scan</a>
                         </li>
                         <li>
-                            <a href="#">Dropdown Item</a>
+                            <a href="poodle.php">Poodle Scan</a>
+                        </li>
+                        <li>
+                            <a href="sslFullScan.php"><i class="fa fa-fw fa-desktop"></i> Full SSL/TLS Scan</a>
                         </li>
                     </ul>
                 </li>
                 <li>
-                    <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> RTL Dashboard</a>
+                    <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
                 </li>
             </ul>
         </div>
@@ -112,9 +119,10 @@ if(!isset($_SESSION['loginUser'])) {
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            Dashboard
-                            <small>Statistics Overview</small>
+                            Welcome to PenGui
                         </h1>
+                        <h4 align="center">Start your vulnerability scanning now!</h4>
+                        <p>This website is created for </p>
                     </div>
                 </div>
             </div>

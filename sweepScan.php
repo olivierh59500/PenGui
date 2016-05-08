@@ -2,47 +2,67 @@
 /**
  * Created by PhpStorm.
  * User: root
- * Date: 06/05/16
- * Time: 22:32
+ * Date: 07/05/16
+ * Time: 13:32
  */
 
-error_reporting(-1); ini_set('display_errors', 1);
+//error_reporting(-1); ini_set('display_errors', 1);
+require('sessionManagement.php');
 require('utility.php');
 require('new_task.php');
-require('sessionManagement.php');
 
-if(!isset($_SESSION['loginUser'])) {
+if (!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
-$dnsScan = isset($_POST['dns_scan']) ? $_POST['dns_scan'] : null;
-$userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
-$sessionUser = $_SESSION['loginUser'];
-$taskStatus = "processing";
+$target = isset($_POST["sweepScan"]) ? $_POST["sweepScan"] : null;
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (empty($dnsScan)) {
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    if (empty($target)) {
         $error = true;
-    }
-    //strip the [http://www.] get the domain name and then add the http or https to the link to get validated
-    //only works for domain name
-    if(!filter_var("http://www." . $dnsScan, FILTER_VALIDATE_URL) && !filter_var($dnsScan, FILTER_VALIDATE_IP)) {
-        $error = true;
+    } else if (strpos($target, "/") !== false) {
+        $checkCIDR = explode("/", $target);
+        if (!filter_var($checkCIDR[0], FILTER_VALIDATE_IP)) {
+            $error = true;
+        } else {
+            //function
+            sweepScan($target);
+            $success = true;
+        }
+
+    } else if (strpos($target, "-") !== false) {
+        $checkRange = explode("-", $target);
+        if (!filter_var($checkRange[0], FILTER_VALIDATE_IP)) {
+            $error = true;
+        } else {
+            sweepScan($target);
+            $success = true;
+        }
     } else {
-        $dnsScanTarget = "dnscan --domain " .$dnsScan; //need to remove the www. from the string so need to use explode string function
-        $stmt = Utility::databaseConnection()->prepare("INSERT INTO dnsScan (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss",$sessionUser, $dnsScanTarget, $userIpAddress, $taskStatus);
-        $stmt->execute();
-        $success = true;
-        //call the Task newTask function to queue the job
-        //exec(escapeshellcmd("php backgroundTask.php >/dev/null 2>/dev/null &"));
-        $startTask = new Task();
-        $startTask->newTask($dnsScanTarget);
+        sweepScan($target);
+        $success =true;
     }
 }
 
-?>
+function sweepScan($target){
+    $sessionUser = $_SESSION['loginUser'];
+    $userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
+    $taskStatus = "processing";
+    $nmap = "nmap -sn ";
 
+    $nmapScanType = $nmap . $target;
+    $stmt = Utility::databaseConnection()->prepare("INSERT INTO nmap (username, user_input_command, ip_address, task_status) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $sessionUser, $nmapScanType, $userIpAddress, $taskStatus);
+    $stmt->execute();
+    $target = null;
+    $stmt->close();
+    $startTask = new Task();
+    $startTask->newTask($nmapScanType);
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 
@@ -51,9 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Mojtaba Amiri">
 
-    <title>PenGui DNS Scan</title>
+    <title>PenGui Sweep Scan</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/css/bootstrap.min.css" rel="stylesheet">
@@ -62,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Custom Fonts -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
           rel="stylesheet" type="text/css">
+
 </head>
 
 <body>
@@ -71,7 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <button type="button" class="navbar-toggle" data-toggle="collapse"
+                        data-target=".navbar-ex1-collapse">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
@@ -79,12 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </button>
                 <a class="navbar-brand" href="index.php">PenGui</a>
             </div>
-
             <!-- Top User Menu Items -->
             <ul class="nav navbar-right top-nav">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-                            class="fa fa-user"></i> <?php echo (htmlspecialchars($_SESSION['loginUser'])) ?><b
+                            class="fa fa-user"></i> <?php echo(htmlspecialchars($_SESSION['loginUser'])) ?><b
                             class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
@@ -103,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <li>
                         <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="javascript:;" data-toggle="collapse" data-target="#nmapScanType"><i
                                 class="fa fa-fw fa-arrows-v"></i> Nmap <i
                                 class="fa fa-fw fa-caret-down"></i></a>
@@ -122,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <li>
                         <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
                     </li>
-                    <li class="active">
+                    <li>
                         <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                     </li>
                     <li>
@@ -141,75 +162,75 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </ul>
                     </li>
                     <li>
-                        <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
+                        <a href="myscans.php"><i class="fa fa-fw fa-table"></i> MyScans</a>
                     </li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
         </nav>
+
         <div id="page-wrapper">
             <div class="container-fluid">
                 <!-- Page Heading -->
                 <div class="row">
                     <div class="col-lg-12">
                         <h1 class="page-header">
-                            DNS SCAN
-                            <small>DNS Subdomain Scanner</small>
+                            Nmap
+                            <small>Network Scanning</small>
                         </h1>
                         <!-- Page Content -->
                         <div id="page-content-wrapper">
                             <div class="container-fluid">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <h1>Scan</h1>
-                                        <form class="form-horizontal" role="form" method="post" action="dnsScan.php">
+                                        <h1>Sweep Scan</h1>
+                                        <form class="form-horizontal" role="form" method="post" action="sweepScan.php">
                                             <div class="col-lg-6">
                                                 <div class="input-group">
-                                                    <input type="text" name="dns_scan" class="form-control"
-                                                           placeholder="example.com">
+                                                    <input type="text" name="sweepScan" class="form-control"
+                                                           placeholder="127.0.0.1-255">
                         <span class="input-group-btn">
                                             <button class="btn btn-success" type="submit">Scan</button>
                                             <button class="btn btn-danger" type="reset">Reset</button>
                                           </span>
                                                 </div>
+                                                <!-- /input-group -->
                                                 <?php
-                                                if (isset($error)) {
+                                                if(isset($error)) {
                                                     echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>ERROR:</strong> Please enter a valid Domain name.</div>";
-                                                } else if (isset($success)) {
+                                                    <strong>ERROR:</strong> Please enter a valid IP address.</div>";
+                                                }else if (isset($success)) {
                                                     echo "<div class=\"alert alert-success\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
-                  <strong>Success:</strong> Scan was successful, See My Scans for the progress of your scans</div>";
+                                                    <strong>Success:</strong> Scan was successful, See My Scans for progress of your scans</div>";
                                                 }
                                                 ?>
                                             </div>
                                             <!-- /.col-lg-6 -->
                                         </form>
                                     </div>
+                                    <div class="col-lg-6">
+                                        <br>
+                                        <h4>About the tool: </h4>
+                                        <p>Nmap (Network Mapper) is an open source and free tool used for
+                                            network discovery and security auditing. It comes with myriad of features
+                                            such as; network inventory, monitoring hosts, service uptime, host discovery, service
+                                            application name and versions, operating system fingerprinting and more.</p>
+
+                                        <h4>How it works:</h4>
+                                            This technique is often referred to as Ping Sweep Scan. It doesn't perform a port scan and will only report on hosts that are alive (available) This can be a great scanning technique for sysadmins to easily scan available machines within a given network. This scanning technique will consists of an ICMP echo request, TCP SYN to port 443, TCP ACK to port 80, and an ICMP timestamp request.
+                                    </div>
                                 </div>
-                                <br>
-                                <h4>About this tool:</h4>
-                                <p>DNS Scan is a tool based in python using the top most common subdomain names. DNS Scan uses wordlist of subdomains to perform its scans. </p>
-                                <br>
-                                <h4>How it works:</h4>
-                                <p>DNS Scan will first try to perform a DNS zone transfer and if the zone transfer failed it will lookup the TXT and MX records for the target domain and                                       performs a recursive subdomain scanning.</p>
-                                <p>A zone transfer that from an external IP address is used as part of an attackers reconnaissance phase. Usually a zone transfer is a normal operation                                          between primary and secondary DNS servers in order to synchronise the records for a domain. This is typically not something you want to be externally                                        accessible. If an attacker can gather all your DNS records, they can use those to select targets for exploitation.</p>
-                                <p>To find out more go here:
-                                    <a href="https://hackertarget.com/zone-transfer/" target="_blank">https://hackertarget.com/zone-transfer/</a> or
-                                    <a href="https://digi.ninja/projects/zonetransferme.php" target="_blank">https://digi.ninja/projects/zonetransferme.php</a> or
-                                    <a href="https://technet.microsoft.com/en-us/library/cc781340(v=ws.10).aspx" target="_blank">https://technet.microsoft.com/en-us/library/cc781340(v=ws.10).aspx</a></p>
                             </div>
+                            <!-- /#page-content-wrapper -->
                         </div>
-                        <!-- /#page-content-wrapper -->
                     </div>
                 </div>
             </div>
+            <!-- /#wrapper -->
         </div>
-    </div>
-</div>
-<!-- jQuery -->
-<script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
-<!-- Bootstrap Core JavaScript -->
-<script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
-
+        <!-- jQuery -->
+        <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/jquery.js"></script>
+        <!-- Bootstrap Core JavaScript -->
+        <script src="https://blackrockdigital.github.io/startbootstrap-sb-admin/js/bootstrap.min.js"></script>
 </body>
 </html>

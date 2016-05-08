@@ -9,8 +9,8 @@ if(!isset($_SESSION['loginUser'])) {
     header("location: login.php");
 }
 
-$whoIsScan = Utility::validateInput($_POST['whois_scan']);
-$userIpAddress = $_SERVER["REMOTE_ADDR"];
+$whoIsScan = isset($_POST['whois_scan']) ? $_POST['whois_scan'] : null;
+$userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
 $sessionUser = $_SESSION['loginUser'];
 $taskStatus = "processing";
 
@@ -97,16 +97,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
                     </li>
                     <li>
-                        <a href="nmap.php"> Nmap</a>
-                    </li>
-                    <li>
-                        <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My Scans</a>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#nmapScanType"><i
+                                class="fa fa-fw fa-arrows-v"></i> Nmap <i
+                                class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="nmapScanType" class="collapse">
+                            <li class="active">
+                                <a href="tcpScan.php">TCP Scan</a>
+                            </li>
+                            <li>
+                                <a href="sweepScan.php">Ping Sweep Scan</a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="active">
                         <a href="whois.php"><i class="fa fa-fw fa-edit"></i> WHOIS</a>
-                    </li>
-                    <li>
-                        <a href="sslchecker.php"><i class="fa fa-fw fa-desktop"></i> SSL Checker</a>
                     </li>
                     <li>
                         <a href="webServerScanner.php"><i class="fa fa-fw fa-wrench"></i> Web Server Scanner</a>
@@ -115,19 +119,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <a href="dnsScan.php"><i class="fa fa-fw fa-wrench"></i> DNS Scan</a>
                     </li>
                     <li>
-                        <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i
-                                class="fa fa-fw fa-arrows-v"></i> Dropdown <i class="fa fa-fw fa-caret-down"></i></a>
-                        <ul id="demo" class="collapse">
+                        <a href="javascript:;" data-toggle="collapse" data-target="#sslChecker"><i
+                                class="fa fa-fw fa-arrows-v"></i> SSL/TLS Checker <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="sslChecker" class="collapse">
                             <li>
-                                <a href="#">Dropdown Item</a>
+                                <a href="heartbleed.php">Heartbleed Scan</a>
                             </li>
                             <li>
-                                <a href="#">Dropdown Item</a>
+                                <a href="poodle.php">Poodle Scan</a>
+                            </li>
+                            <li>
+                                <a href="sslFullScan.php"><i class="fa fa-fw fa-desktop"></i> Full SSL/TLS Scan</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="index.php"><i class="fa fa-fw fa-dashboard"></i> RTL Dashboard</a>
+                        <a href="myscans.php"><i class="fa fa-fw fa-table"></i> My  Scans</a>
                     </li>
                 </ul>
             </div>
@@ -174,6 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     </div>
                                 </div>
                                 <br>
+                                <h4>About this tool: </h4>
                                 <p>A WHOIS search will provide information regarding a domain name, such as example.com. It may include information, such as domain ownership, where and                                            when registered, expiration date, and the nameservers assigned to the domain.</p>
                                 <p>Uses of WHOIS: </p>
                                 <ul class="dl-horizontal">
@@ -190,6 +198,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <li>Gather investigative leads (i.e., to identify parties from whom additional information might be obtained)- Law enforcement agents use WHOIS to find email addresses and attempt to identify the location of an alleged perpetrator of a crime involving fraud</li>
                                     <li>Investigate spam- law enforcement agents look to the WHOIS database to collect information on the website advertised in the spam</li>
                                 </ul>
+                                <h4>How it works:</h4>
+                                <p>Find out more here: <a href="https://whois.icann.org/en/dns-and-whois-how-it-works">whois how it works</a></p>
+                                <div align="center"> <img src="images/ICAN-Infographic-WhoISQuery-Large.gif"> </div>
+
+
                             </div>
                         </div>
                         <!-- /#page-content-wrapper -->

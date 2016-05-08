@@ -14,6 +14,13 @@ TestSSL - git clone https://github.com/drwetter/testssl.sh.git
 
 ln -s /var/www/html/vendor/dnscan/dnscan.py /usr/bin/dnscan
 
+If you are getting this error while trying to start a worker: stream_socket_client(): unable to connect to tcp://localhost:5672 (Connection refused)
+    This usually occurs when the rabbitmq-server is not running so start or restart the service with as root: service rabbitmq-server restart
+    The error should be solved now
+
+    To get a web based management you can enable the plugin by typing this as root:
+        rabbitmq-plugins enable rabbitmq_management
+        Now do a restart on rabbitmq-server for the changes to take place
 
 
 CREATE TABLE `PenGui`.`dnsScan` (

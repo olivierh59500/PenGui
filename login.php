@@ -1,6 +1,5 @@
 <?php
-error_reporting(-1);
-ini_set('display_errors', 1);
+error_reporting(-1); ini_set('display_errors', 1);
 require('utility.php');
 require('sessionManagement.php');
 require('recaptcha/src/autoload.php');
