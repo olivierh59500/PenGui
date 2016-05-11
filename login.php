@@ -18,20 +18,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($passwordAuthentication)) {
         $error[] = $passwordAuthenticationError = "Password is required";
     }
-    $stmt = Utility::databaseConnection()->prepare("SELECT Email, Password FROM personal_details WHERE Email = ?");
+    $stmt = Utility::databaseConnection()->prepare("SELECT Email, Password, Activated FROM personal_details WHERE Email = ?");
     $stmt->bind_param("s", $emailAuthentication);
     $stmt->execute();
-    $stmt->bind_result($dbEmail, $dbPassword);
+    $stmt->bind_result($dbEmail, $dbPassword, $dbActivated);
     $stmt->fetch();
-    if ($dbEmail === $emailAuthentication) {
-        if (password_verify($passwordAuthentication, $dbPassword)) { //This function is safe against timing attacks.
-            Session::manageSession($emailAuthentication);
+        if ($dbActivated === 0) {
+            $error[] = $ErrorAccountActivation = "Account has not been activated";
+        } else if ($dbEmail === $emailAuthentication) {
+            if (password_verify($passwordAuthentication, $dbPassword)) { //This function is safe against timing attacks.
+                Session::manageSession($emailAuthentication);
+            } else {
+                $error[] = $loginError = "Email or Password is incorrect \n or CAPTCHA is not set. Please try again";
+            }
         } else {
             $error[] = $loginError = "Email or Password is incorrect \n or CAPTCHA is not set. Please try again";
         }
-    } else {
-        $error[] = $loginError = "Email or Password is incorrect \n or CAPTCHA is not set. Please try again";
-    }
+
     $stmt->close();
 }//end of post
 

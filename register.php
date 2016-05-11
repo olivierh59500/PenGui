@@ -1,6 +1,8 @@
 <?php
 //error_reporting(-1); ini_set('display_errors', 1);
 require('utility.php');
+require('new_task.php');
+
 $firstName = isset($_POST["first_Name"]) ? $_POST["first_Name"] : null; //php ternary return value
 $lastName = isset($_POST["last_Name"]) ? $_POST["last_Name"] : null;
 $email = isset($_POST["email"]) ? $_POST["email"] : null;
@@ -53,22 +55,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error[] = $passwordMatchError;
     }
     if (empty($error)) {
+        $_SESSION['tmpEmail'] = $email;
         registerUser($firstName, $lastName, $email, $password);
-        Utility::alert(htmlspecialchars("Successfully registered. Going to login screen..."));
-        echo ('<script> window.location.replace("login.php")</script>');
+//        Utility::alert(htmlspecialchars("Successfully registered. Going to login screen..."));
+//        sleep(3);
+        //echo ('<script>window.location.replace(htmlspecialchars("login.php"))</script>');
+        header("Location: emailverification.php");
     }
 
 }//end of POST METHOD REQUEST
 
-function registerUser($firstName, $lastName, $email, $password) {
+function sendEmail($to, $emailVerificationCode) {
+    $subject = "Pengui Account Verification Code";
+    $message = '
+    Thank you for signing up for pengui.uk' . "\r\n" .
     
+    'Your account has been created however before being able to login you will need to verify your Email address by the code provided below:' . "\r\n" .
+    
+    'Email Verification Code: ' . "$emailVerificationCode" . "\r\n" .
+
+    'Copy and paste the code in the verification page' . "\r\n" .
+    
+    'Or go to here and enter the code: https://pengui.uk/emailverification.php' . "\r\n" .
+    
+    'Happy Hunting! :D';
+
+    $headers = 'From: webmaster@pengui.com' . "\r\n" .
+        'Reply-To: webmaster@pengui.com' . "\r\n" .
+        'X-Mailer: PHP/' . phpversion();
+
+    $task = new Task();
+    $task->newTask(mail($to, $subject, $message, $headers));
+    //mail($to, $subject, $message, $headers);
+}
+
+function registerUser($firstName, $lastName, $email, $password)
+{
+    $activated = 0;
     $salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM); //creating the salt
-    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $salt]); //cost=14 ==> 0.5 second delay
-    $stmt = Utility::databaseConnection()->prepare("INSERT INTO personal_details (First_Name, Last_Name, Email, Password) VALUES (?,?,?,?)");
-    $stmt->bind_param("ssss", $firstName, $lastName, $email, $password);
+    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $salt]); //cost=14 ==> ~0.5-1 sec second delay
+    $emailSalt = mcrypt_create_iv(512, MCRYPT_DEV_URANDOM);
+    $emailVerificationHash = hash("sha256", $emailSalt);
+    $stmt = Utility::databaseConnection()->prepare("INSERT INTO personal_details (First_Name, Last_Name, Email, Password, Activated, Email_Hash_Verification) VALUES (?,?,?,?,?,?)");
+    $stmt->bind_param("ssssis", $firstName, $lastName, $email, $password, $activated, $emailVerificationHash);
     $stmt->execute();
     $stmt->close();
+
+    sendEmail($email, $emailVerificationHash);
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -104,7 +139,7 @@ function registerUser($firstName, $lastName, $email, $password) {
                 <a class="navbar-brand" href="register.php">PenGui</a>
             </div>
     </div>
-    <div class="container">
+    <div align="center" class="container">
         <div class="row">
             <div class="col-md-4 col-md-offset-4">
                 <div class="Register-panel panel panel-default">

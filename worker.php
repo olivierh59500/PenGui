@@ -49,7 +49,7 @@ $callback = function ($msg) {
     $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 };
 //1 = prefetch count
-$channel->basic_qos(null, 10, null);
+$channel->basic_qos(null, 1, null);
 $channel->basic_consume('task_queue', '', false, false, false, false, $callback);
 
 while (count($channel->callbacks)) {

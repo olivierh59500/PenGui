@@ -47,11 +47,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $serviceVersionScan = $nmap . $serviceScan . $target;
         tcpScan($serviceVersionScan);
         $success = true;
-    } else if (isset($detectOS)){
+    } else if (isset($detectOS)) {
         $osDetection = $nmap . $detectOS . $target;
         tcpScan($osDetection);
         $success = true;
-    } else if (isset($traceroute)){
+    } else if (isset($traceroute)) {
         $tracerouteScan = $nmap . $traceroute . $target;
         tcpScan($tracerouteScan);
         $success = true;
@@ -62,7 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-function tcpScan($nmapScanType) {
+function tcpScan($nmapScanType)
+{
     $sessionUser = $_SESSION['loginUser'];
     $userIpAddress = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : null;
     $taskStatus = "processing";
@@ -208,10 +209,10 @@ function tcpScan($nmapScanType) {
                                           </span>
                                                 </div>
                                                 <?php
-                                                if(isset($error)) {
+                                                if (isset($error)) {
                                                     echo "<div class=\"alert alert-danger\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
                                                     <strong>ERROR:</strong> Please enter a valid IP address or domain name.</div>";
-                                                }else if (isset($success)) {
+                                                } else if (isset($success)) {
                                                     echo "<div class=\"alert alert-success\"> <a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>
                                                     <strong>Success:</strong> Scan was successful, See My Scans for progress of your scans</div>";
                                                 }
@@ -219,13 +220,16 @@ function tcpScan($nmapScanType) {
                                                 <!-- /input-group -->
                                                 <h4> Scan options: </h4>
                                                 <label class="checkbox-inline">
-                                                    <input name="service_scan" type="checkbox" value="-sV "> Service Version Detection
+                                                    <input name="service_scan" type="checkbox" value="-sV "> Service
+                                                    Version Detection
                                                 </label>
                                                 <label class="checkbox-inline">
-                                                    <input name="detectOS" type="checkbox" value="-O "> Operating System Detection
+                                                    <input name="detectOS" type="checkbox" value="-O "> Operating System
+                                                    Detection
                                                 </label>
                                                 <label class="checkbox-inline">
-                                                    <input name="traceroute" type="checkbox" value="--traceroute "> Trace Route
+                                                    <input name="traceroute" type="checkbox" value="--traceroute ">
+                                                    Trace Route
                                                 </label>
                                             </div>
                                             <!-- /.col-lg-6 -->

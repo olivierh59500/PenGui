@@ -17,9 +17,7 @@ $taskStatus = "processing";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($whoIsScan)) {
         $error = true;
-    }
-    //strip the [http://www.] get the domain name and then add the http or https to the link to get validated
-    if(!filter_var("http://www." . $whoIsScan, FILTER_VALIDATE_URL) && !filter_var($whoIsScan, FILTER_VALIDATE_IP)) {
+    } else if (!filter_var("http://www." . $whoIsScan, FILTER_VALIDATE_URL) && !filter_var($whoIsScan, FILTER_VALIDATE_IP)) { //strip the [http://www.] get the domain name and then add the http or https to the link to get validated
         $error = true;
     } else {
         $whois = "whois " .$whoIsScan; //need to remove the www. from the string so need to use explode string function
