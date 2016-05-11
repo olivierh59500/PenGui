@@ -34,7 +34,7 @@ function getEmailHashVerification($userSuppliedEmailHashVerification) {
     $stmt->execute();
     $stmt->bind_result($dbEmail, $dbEmailHashVerification);
     while ($stmt->fetch()) {
-        if ($userSuppliedEmailHashVerification === $dbEmailHashVerification) {
+        if (hash_equals($dbEmailHashVerification, $userSuppliedEmailHashVerification)) {
             activateUser($dbEmail);
         } else {
             $error = "Email Verification Code is invalid. Try again.";
@@ -51,7 +51,6 @@ function activateUser($email) {
     $stmt->bind_param("is", $activated, $email);
     $stmt->execute();
     $stmt->close();
-
     Utility::alert(htmlspecialchars("Account successfully verified. Going to login screen..."));
     echo('<script>window.location.replace("login.php")</script>');
 }
