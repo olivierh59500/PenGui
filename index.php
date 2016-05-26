@@ -2,7 +2,7 @@
 //require('loginAuthentication.php');
 error_reporting(-1); ini_set('display_errors', 1);
 require('sessionManagement.php');
-if(!isset($_SESSION['loginUser'])) {
+if(!isset($_SESSION['SessionID'])) {
     header("location: login.php");
 }
 

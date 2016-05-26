@@ -5,7 +5,7 @@ require('sessionManagement.php');
 require('utility.php');
 
 
-if (!isset($_SESSION['loginUser'])) {
+if (!isset($_SESSION['SessionID'])) {
     header("location: login.php");
 }
 

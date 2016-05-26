@@ -4,7 +4,7 @@ require('utility.php');
 require('sessionManagement.php');
 require('new_task.php');
 
-if(!isset($_SESSION['loginUser'])) {
+if(!isset($_SESSION['SessionID'])) {
     header("location: login.php");
 }
 

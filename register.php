@@ -46,54 +46,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($password)) {
         $passwordError = "Password is required";
         $error[] = $passwordError;
-    } else if (strlen($password) < 8) {
-        $passwordError = "Please make sure your password is greater than 8 characters";
+    } else if (strlen($password) < 12) {
+        $passwordError = "Please make sure your password at least contains: 12 characters";
         $error[] = $passwordError;
     }
     if ($confirmPassword !== $password) {
-        $passwordMatchError = "Password doesn't match";
+        $passwordMatchError = "Password doesn't match!";
         $error[] = $passwordMatchError;
     }
     if (empty($error)) {
         $_SESSION['tmpEmail'] = $email;
         registerUser($firstName, $lastName, $email, $password);
-//        Utility::alert(htmlspecialchars("Successfully registered. Going to login screen..."));
-//        sleep(3);
-        //echo ('<script>window.location.replace(htmlspecialchars("login.php"))</script>');
         header("Location: emailverification.php");
     }
 
 }//end of POST METHOD REQUEST
 
-function sendEmail($to, $emailVerificationCode) {
+function sendEmail($emailTo, $emailVerificationCode) {
     $subject = "Pengui Account Verification Code";
-    $message = '
-    Thank you for signing up for pengui.uk' . "\r\n" .
-    
-    'Your account has been created however before being able to login you will need to verify your Email address by the code provided below:' . "\r\n" .
-    
-    'Email Verification Code: ' . "$emailVerificationCode" . "\r\n" .
-
-    'Copy and paste the code in the verification page' . "\r\n" .
-    
-    'Or go to here and enter the code: https://pengui.uk/emailverification.php' . "\r\n" .
-    
+    $message = 'Thank you for signing up for pengui.uk' . "\r\n\n" .
+    'Your account has been created however before being able to login you will need to verify your Email address by the code provided below:' . "\r\n\n" .
+    'Email Verification Code: '." $emailVerificationCode "."\r\n\n" .
+    'Copy and paste the code in the verification page or go to here and enter the code:' . "\r\n\n" .
+    'https://pengui.uk/emailverification.php' . "\r\n\n" .
     'Happy Hunting! :D';
 
     $headers = 'From: webmaster@pengui.com' . "\r\n" .
-        'Reply-To: webmaster@pengui.com' . "\r\n" .
+        'Reply-To: noreply@pengui.com' . "\r\n" .
         'X-Mailer: PHP/' . phpversion();
 
-    $task = new Task();
-    $task->newTask(mail($to, $subject, $message, $headers));
-    //mail($to, $subject, $message, $headers);
+    mail($emailTo, $subject, $message, $headers);
 }
 
 function registerUser($firstName, $lastName, $email, $password)
 {
     $activated = 0;
-    $salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM); //creating the salt
-    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14', 'salt' => $salt]); //cost=14 ==> ~0.5-1 sec second delay
+    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => '14']); //cost=14 ==> ~0.5-1 sec second delay
     $emailSalt = mcrypt_create_iv(512, MCRYPT_DEV_URANDOM);
     $emailVerificationHash = hash("sha256", $emailSalt);
     $stmt = Utility::databaseConnection()->prepare("INSERT INTO personal_details (First_Name, Last_Name, Email, Password, Activated, Email_Hash_Verification) VALUES (?,?,?,?,?,?)");
@@ -122,6 +110,8 @@ function registerUser($firstName, $lastName, $email, $password)
     <!-- Custom Fonts -->
     <link href="https://blackrockdigital.github.io/startbootstrap-sb-admin/font-awesome/css/font-awesome.min.css"
           rel="stylesheet" type="text/css">
+    <link href="passwordmeter.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.2.0/zxcvbn.js"></script>
 </head>
 <body>
 <div class="container-fluid">
@@ -163,7 +153,33 @@ function registerUser($firstName, $lastName, $email, $password)
                                 </div>
                                 <div class="form-group">
                                     <input class="form-control" placeholder="Password" name="password" type="password"
-                                           value="" required>
+                                           value="" id="password" required>
+                                    <meter max="4" id="password-strength-meter"></meter>
+                                    <p id="password-strength-text"></p>
+                                    <script type="text/javascript">  var strength = {
+                                            0: "Worst ☹",
+                                            1: "Bad ☹",
+                                            2: "Weak ☹",
+                                            3: "Good ☺",
+                                            4: "Strong ☻"
+                                        }
+
+                                        var password = document.getElementById('password');
+                                        var meter = document.getElementById('password-strength-meter');
+                                        var text = document.getElementById('password-strength-text');
+
+                                        password.addEventListener('input', function () {
+                                            var val = password.value;
+                                            var result = zxcvbn(val);
+                                            meter.value = result.score;
+                                            if (val !== "") {
+                                                text.innerHTML = "Strength: " + "<strong>" + strength[result.score] + "</strong>" + "<span class='feedback'>" + result.feedback.warning + " " + result.feedback.suggestions + "</span>";
+                                            }
+                                            else {
+                                                text.innerHTML = "";
+                                            }
+                                        }); </script>
+
                                 </div>
                                 <div class="form-group">
                                     <input class="form-control" placeholder="Confirm Password" name="confirm_Password"

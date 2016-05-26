@@ -27,7 +27,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error[] = $ErrorAccountActivation = "Account has not been activated";
         } else if ($dbEmail === $emailAuthentication) {
             if (password_verify($passwordAuthentication, $dbPassword)) { //This function is safe against timing attacks.
-                Session::manageSession($emailAuthentication);
+                $sessionID = mcrypt_create_iv(128, MCRYPT_DEV_URANDOM);
+                Session::manageSession($emailAuthentication, $sessionID);
             } else {
                 $error[] = $loginError = "Email or Password is incorrect \n or CAPTCHA is not set. Please try again";
             }
